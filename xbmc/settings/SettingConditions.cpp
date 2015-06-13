@@ -254,6 +254,9 @@ void CSettingConditions::Initialize()
   if (aml_present())
     m_simpleConditions.insert("have_amcodec");
 #endif
+#ifdef HAS_MFC
+  m_simpleConditions.insert("have_mfccodec");
+#endif
 #ifdef TARGET_DARWIN_IOS_ATV2
   if (g_sysinfo.IsAppleTV2())
     m_simpleConditions.insert("isappletv2");
