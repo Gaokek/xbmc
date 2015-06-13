@@ -1,4 +1,4 @@
-/*
+//*
  *      Copyright (C) 2005-2013 Team XBMC
  *      http://xbmc.org
  *
@@ -56,7 +56,9 @@
 #include "Overlay/DVDOverlayCodecText.h"
 #include "Overlay/DVDOverlayCodecTX3G.h"
 #include "Overlay/DVDOverlayCodecFFmpeg.h"
-
+#if defined(HAS_MFC)
+#include "Video/DVDVideoCodecMFC.h"
+#endif
 
 #include "DVDStreamInfo.h"
 #include "settings/AdvancedSettings.h"
@@ -197,6 +199,11 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, unsigne
 #else
   hwSupport += "MMAL:no ";
 #endif
+#if defined(HAS_MFC) && defined(_LINUX)
+  hwSupport += "MFC:yes ";
+#elif defined(_LINUX)
+  hwSupport += "MFC:no ";
+#endif
   CLog::Log(LOGDEBUG, "CDVDFactoryCodec: compiled in hardware support: %s", hwSupport.c_str());
 
   if (hint.stills && (hint.codec == AV_CODEC_ID_MPEG2VIDEO || hint.codec == AV_CODEC_ID_MPEG1VIDEO))
@@ -204,6 +211,14 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, unsigne
      // If dvd is an mpeg2 and hint.stills
      if ( (pCodec = OpenCodec(new CDVDVideoCodecLibMpeg2(), hint, options)) ) return pCodec;
   }
+
+#if defined(HAS_MFC)
+  if ( !hint.software && CSettings::Get().GetBool("videoplayer.usemfccodec") )
+  {
+    if ( hint.codec == AV_CODEC_ID_H263 || hint.codec == AV_CODEC_ID_H264 || hint.codec == AV_CODEC_ID_MPEG4 || hint.codec == AV_CODEC_ID_MPEG2VIDEO || AV_CODEC_ID_MPEG1VIDEO || hint.codec == AV_CODEC_ID_VC1 )
+      if( (pCodec = OpenCodec(new CDVDVideoCodecMFC(), hint, options)) ) return pCodec;
+  }
+#endif
 
 #if defined(HAS_LIBAMCODEC)
   // amcodec can handle dvd playback.

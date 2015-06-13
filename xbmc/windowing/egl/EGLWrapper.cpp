@@ -37,6 +37,10 @@
   #include "EGLNativeTypeIMX.h"
 #endif
 #include "EGLNativeTypeAmlogic.h"
+#ifdef HAS_HYBRIS
+#include "EGLNativeTypeHybris.h"
+#endif
+#include "EGLNativeTypeFbdev.h"
 #include "EGLWrapper.h"
 
 #define CheckError() m_result = eglGetError(); if(m_result != EGL_SUCCESS) CLog::Log(LOGERROR, "EGL error in %s: %x",__FUNCTION__, m_result);
@@ -106,6 +110,10 @@ bool CEGLWrapper::Initialize(const std::string &implementation)
       (nativeGuess = CreateEGLNativeType<CEGLNativeTypeIMX>(implementation)) ||
 #endif
       (nativeGuess = CreateEGLNativeType<CEGLNativeTypeAmlogic>(implementation))
+#ifdef HAS_HYBRIS
+      (nativeGuess = CreateEGLNativeType<CEGLNativeTypeHybris>(implementation)) ||
+#endif
+      (nativeGuess = CreateEGLNativeType<CEGLNativeTypeFbdev>(implementation))
       )
   {
     m_nativeTypes = nativeGuess;
