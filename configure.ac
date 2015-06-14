@@ -232,6 +232,10 @@ libusb_disabled_udev_found="== libusb disabled. =="
 libcec_enabled="== libcec enabled. =="
 libcec_disabled="== libcec disabled. CEC adapter support will not be available. =="
 
+# Odroid stuff
+hybris_enabled="== Libhybris enabled. =="
+hybris_disabled="== Libhybris disabled. =="
+
 AC_ARG_WITH([ffmpeg],
   [AS_HELP_STRING([--with-ffmpeg],
   [ffmpeg options: auto (search pkg-config or auto build), force (always build ffmpeg), shared (link dynamically), path_to_ffmpeg [default=force]])],
@@ -553,7 +557,7 @@ AC_ARG_ENABLE([breakpad],
 
 AC_ARG_ENABLE([codec],
   [AS_HELP_STRING([--enable-codec],
-  [enable additional codecs from a list of comma separated names, (default is none, choices are amcodec, libstagefright and imxvpu)])],
+  [enable additional codecs from a list of comma separated names, (default is none, choices are mfc, amcodec, libstagefright and imxvpu)])],
   [add_codecs=$enableval],
   [add_codecs=no])
 
@@ -563,6 +567,14 @@ AC_ARG_ENABLE([libav-compat],
    *not* supported by ${APP_NAME} developers and is provided only for convenience. (default is no) 'Linux only'])],
   [use_libav_hacks=$enableval],
   [use_libav_hacks=no])
+
+# Odroid stuff
+
+AC_ARG_ENABLE([hybris],
+  [AS_HELP_STRING([--enable-hybris],
+  [enable use of Libhybris (default is no) 'Linux only'])],
+  [use_hybris=$enableval],
+  [use_hybris=no])
 
 ### End of external library options
 
@@ -1693,6 +1705,24 @@ else
   AC_MSG_NOTICE($libcap_disabled)
 fi
 
+# Odroid stuff
+
+if test "x$use_hybris" != "xno"; then
+  AC_SUBST(ARCH_DEFINES, "-DTARGET_POSIX -DTARGET_LINUX -D_LINUX -DTARGET_HYBRIS")
+  USE_HYBRIS=1;
+  AC_DEFINE(HAS_EGLGLES, [1], [Define if supporting EGL based GLES Framebuffer])
+  AC_DEFINE(HAS_HYBRIS, [1], [Define if supporting Hybris based systems])
+  PKG_CHECK_MODULES([HWCOMPOSEREGL],  [hwcomposer-egl >= 0.1],
+    [INCLUDES="$INCLUDES -I/usr/include/hybris $HWCOMPOSEREGL_CFLAGS"; LIBS="$LIBS $HWCOMPOSEREGL_LIBS"],
+    AC_MSG_ERROR($missing_library))
+  PKG_CHECK_MODULES([HYBRISEGL],  [hybris-egl-platform >= 0.1],
+    [INCLUDES="$INCLUDES $HYBRISEGL_CFLAGS"; LIBS="$LIBS $HYBRISEGL_LIBS"],
+    AC_MSG_ERROR($missing_library))
+  PKG_CHECK_MODULES([LIBHARDWARE],  [libhardware >= 0.1],
+    [INCLUDES="$INCLUDES $LIBHARDWARE_CFLAGS"; LIBS="$LIBS $LIBHARDWARE_LIBS -lsync -lmedia"],
+    AC_MSG_ERROR($missing_library))
+fi
+
 # FFmpeg
 FFMPEG_LIBNAMES="libavcodec >= 56.26.100
                  libavfilter >= 5.11.102
@@ -1932,6 +1962,9 @@ esac
 # remember to convert commas to spaces
 for codecs in `echo $add_codecs | sed 's/,/ /g'`; do
   case $codecs in
+    *mfc*)
+        XB_ADD_CODEC([MFC], [mfc], [$codecs])
+        ;;
     *amcodec*)
         AC_CHECK_HEADER([amcodec/codec_error.h],, AC_MSG_ERROR($missing_headers))
         XB_ADD_CODEC([LIBAMCODEC], [amcodec], [$codecs])
@@ -2433,6 +2466,14 @@ else
   final_message="$final_message\n  additional codecs:\tNo"
 fi
 
+# Odroid stuff
+
+if test "x$use_hybris" != "xno"; then
+  final_message="$final_message\n  Odroid Hybris support:\tYes"
+else
+  final_message="$final_message\n  Odroid Hybris support:\tNo"
+fi
+
 ### External libraries messages
 
 if test "$host_vendor" = "apple" ; then
@@ -2641,6 +2682,7 @@ AC_SUBST(USE_SSE4)
 AC_SUBST(USE_MMAL)
 AC_SUBST(USE_X11)
 AC_SUBST(USE_BREAKPAD)
+AC_SUBST(USE_HYBRIS)
 
 # pushd and popd are not available in other shells besides bash, so implement
 # our own pushd/popd functions

@@ -154,6 +154,22 @@ bool aml_support_hevc()
   return (valstr.find("hevc:") != std::string::npos);
 }
 
+bool aml_support_hevc()
+{
+  char valstr[1024];
+  if(aml_get_sysfs_str("/sys/class/amstream/vcodec_profile", valstr, 1024) != 0)
+  {
+    return false;
+  }
+  char* p = strstr(valstr, "hevc:");
+  if(p == NULL)
+  {
+    return false;
+  }
+
+  return true;
+}
+
 enum AML_DEVICE_TYPE aml_get_device_type()
 {
   static enum AML_DEVICE_TYPE aml_device_type = AML_DEVICE_TYPE_UNINIT;
@@ -174,7 +190,9 @@ enum AML_DEVICE_TYPE aml_get_device_type()
         aml_device_type = AML_DEVICE_TYPE_M8M2;
       else
         aml_device_type = AML_DEVICE_TYPE_M8;
-    } else if (cpu_hardware.find("Meson8B") != std::string::npos)
+    }
+    else if (cpu_hardware.find("Meson8B") != std::string::npos
+          || cpu_hardware.find("ODROID") != std::string::npos)
       aml_device_type = AML_DEVICE_TYPE_M8B;
     else
       aml_device_type = AML_DEVICE_TYPE_UNKNOWN;
@@ -219,7 +237,7 @@ void aml_set_audio_passthrough(bool passthrough)
 {
   if (  aml_present()
     &&  aml_get_device_type() != AML_DEVICE_TYPE_UNKNOWN
-    &&  aml_get_device_type() <= AML_DEVICE_TYPE_M8)
+    &&  aml_get_device_type() <= AML_DEVICE_TYPE_M8M2)
   {
     // m1 uses 1, m3 and above uses 2
     int raw = aml_get_device_type() == AML_DEVICE_TYPE_M1 ? 1:2;
@@ -338,7 +356,25 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 60;
     res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
   }
-  else if (StringUtils::EqualsNoCase(fromMode, "720p50hz"))
+  else if (StringUtils::EqualsNoCase(fromMode,"720p23.98hz")) // fake resolutions
+  {
+    res->iWidth = 1280;
+    res->iHeight= 720;
+    res->iScreenWidth = 1280;
+    res->iScreenHeight= 720;
+    res->fRefreshRate = 23.98;
+    res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
+  }
+  else if (StringUtils::EqualsNoCase(fromMode,"720p25hz")) // fake resolution
+  {
+    res->iWidth = 1280;
+    res->iHeight= 720;
+    res->iScreenWidth = 1280;
+    res->iScreenHeight= 720;
+    res->fRefreshRate = 25;
+    res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
+  }
+  else if (StringUtils::EqualsNoCase(fromMode,"720p50hz"))
   {
     res->iWidth = 1280;
     res->iHeight= 720;
@@ -356,7 +392,16 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 60;
     res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
   }
-  else if (StringUtils::EqualsNoCase(fromMode, "1080p24hz"))
+  else if (StringUtils::EqualsNoCase(fromMode,"1080p23.98hz")) // fake resolution
+  {
+    res->iWidth = 1920;
+    res->iHeight= 1080;
+    res->iScreenWidth = 1920;
+    res->iScreenHeight= 1080;
+    res->fRefreshRate = 23.98;
+    res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
+  }
+  else if (StringUtils::EqualsNoCase(fromMode,"1080p24hz"))
   {
     res->iWidth = 1920;
     res->iHeight= 1080;
@@ -365,7 +410,16 @@ bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res)
     res->fRefreshRate = 24;
     res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
   }
-  else if (StringUtils::EqualsNoCase(fromMode, "1080p30hz"))
+  else if (StringUtils::EqualsNoCase(fromMode,"1080p25hz")) // fake resolution
+  {
+    res->iWidth = 1920;
+    res->iHeight= 1080;
+    res->iScreenWidth = 1920;
+    res->iScreenHeight= 1080;
+    res->fRefreshRate = 25;
+    res->dwFlags = D3DPRESENTFLAG_PROGRESSIVE;
+  }
+  else if (StringUtils::EqualsNoCase(fromMode,"1080p30hz"))
   {
     res->iWidth = 1920;
     res->iHeight= 1080;

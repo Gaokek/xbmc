@@ -41,6 +41,11 @@ ifeq (@USE_MMAL@,1)
 SRCS += MMALCodec.cpp
 endif
 
+ifeq (@USE_MFC@,1)
+SRCS += DVDVideoCodecMFC.cpp
+endif
+
+
 LIB=Video.a
 
 include @abs_top_srcdir@/Makefile.include

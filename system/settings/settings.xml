@@ -664,6 +664,15 @@
         </requirement>
       </group>
       <group id="3">
+        <setting id="videoplayer.usemfccodec" type="boolean" label="13439" help="36544">
+          <requirement>HAVE_MFCCODEC</requirement>
+          <level>2</level>
+          <default>true</default>
+          <updates>
+            <update type="change" />
+          </updates>
+          <control type="toggle" />
+        </setting>
         <setting id="videoplayer.useamcodec" type="boolean" label="13438" help="36422">
           <requirement>HAVE_AMCODEC</requirement>
           <level>2</level>

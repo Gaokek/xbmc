@@ -497,6 +497,7 @@ EGLConfig getEGLConfig(EGLDisplay eglDisplay, XVisualInfo *vInfo)
   EGLint attributes[] =
   {
     EGL_DEPTH_SIZE, 24,
+    EGL_CONFIG_ID, 1,
     EGL_NONE
   };
   EGLint numConfigs;
@@ -528,6 +529,11 @@ EGLConfig getEGLConfig(EGLDisplay eglDisplay, XVisualInfo *vInfo)
   for (EGLint i = 0;i < numConfigs;++i)
   {
     EGLint value;
+    eglGetConfigAttrib(eglDisplay, eglConfigs[i], EGL_CONFIG_ID, &value);
+    if(value != 1) {
+		CLog::Log(LOGERROR, "Mali: This isn't CONFIG_ID 1, this is CONFIG_ID %d", value);
+		break;
+	}
     if (!eglGetConfigAttrib(eglDisplay, eglConfigs[i], EGL_NATIVE_VISUAL_ID, &value))
     {
       CLog::Log(LOGERROR, "Failed to query EGL_NATIVE_VISUAL_ID for egl config.");
@@ -583,8 +589,10 @@ bool CWinSystemX11::IsSuitableVisual(XVisualInfo *vInfo)
     return false;
   if (!eglGetConfigAttrib(m_eglDisplay, config, EGL_ALPHA_SIZE, &value) || value < 8)
     return false;
+/*
   if (!eglGetConfigAttrib(m_eglDisplay, config, EGL_DEPTH_SIZE, &value) || value < 24)
     return false;
+*/
  
 #endif
   return true;
