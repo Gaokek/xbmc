@@ -2715,11 +2715,8 @@ AC_SUBST(UPNP_DEFINES)
 AC_SUBST(USE_SSE4)
 AC_SUBST(USE_MMAL)
 AC_SUBST(USE_X11)
-<<<<<<< HEAD:configure.ac
 AC_SUBST(USE_BREAKPAD)
-=======
 AC_SUBST(USE_HYBRIS)
->>>>>>> 58450bbf081c30aa08c45540369c3c85656ff87e:configure.in
 
 # pushd and popd are not available in other shells besides bash, so implement
 # our own pushd/popd functions
