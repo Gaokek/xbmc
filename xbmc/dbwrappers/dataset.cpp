@@ -29,6 +29,7 @@
 #include "dataset.h"
 #include "utils/log.h"
 #include <cstring>
+#include <algorithm>
 
 #ifndef __GNUC__
 #pragma warning (disable:4800)
@@ -93,6 +94,7 @@ Dataset::Dataset():
   frecno = 0;
   fbof = feof = true;
   autocommit = true;
+  indexMapID = ~0;
 
   fields_object = new Fields();
 
@@ -110,6 +112,7 @@ Dataset::Dataset(Database *newDb):
   frecno = 0;
   fbof = feof = true;
   autocommit = true;
+  indexMapID = ~0;
 
   fields_object = new Fields();
 
@@ -205,6 +208,10 @@ void Dataset::close(void) {
   frecno = 0;
   fbof = feof = true;
   active = false;
+  
+  indexMap_Fields.clear();
+  indexMap_Sorter.clear();
+  indexMapID = ~0;
 }
 
 
@@ -321,8 +328,45 @@ bool Dataset::set_field_value(const char *f_name, const field_value &value) {
   //  return false;
 }
 
+/********* INDEXMAP SECTION START *********/
+bool Dataset::has_indexMap(const char *f_name) {
+  if (!(ds_state == dsEdit || ds_state == dsInsert))
+  {
+    if (~indexMapID)
+    {
+      unsigned int next(indexMapID+1 >= indexMap_Fields.size()?0:indexMapID+1);
+      if (indexMap_Fields[next].strName == f_name) //Yes, our assumption hits.
+      {
+        indexMapID=next;
+        return true;
+      }
+    }
+    // indexMap not found on the expected way, either first row strange retrival order
+    INDEXMAPFIELD tmp(f_name);
+    std::vector<unsigned int>::iterator ins(lower_bound(indexMap_Sorter.begin(), indexMap_Sorter.end(), tmp, INDEXMAPSORTER(indexMap_Fields)));
+    if (ins == indexMap_Sorter.end() || (tmp <  indexMap_Fields[*ins])) //new entry
+    {
+      //Insert the new item just behind last retrieved item
+      //In general this should be always end(), but could be different
+      indexMap_Sorter.insert(ins, ++indexMapID);
+      indexMap_Fields.insert(indexMap_Fields.begin()+indexMapID,tmp);
+
+    }
+    else //entry already existing!
+    {
+      indexMapID = *ins;
+      return true;
+    }
+  }
+  return false; //invalid
+}
+/********* INDEXMAP SECTION END *********/
 
 const field_value Dataset::get_field_value(const char *f_name) {
+  //Lets try to reuse a string ->index conversation
+  if (has_indexMap(f_name))
+    return get_field_value(static_cast<int>(indexMap_Fields[indexMapID].resultIndex));
+
   const char* name=strstr(f_name, ".");
   if (name) name++;
   if (ds_state != dsInactive) {
@@ -335,11 +379,12 @@ const field_value Dataset::get_field_value(const char *f_name) {
        }
     else
       for (unsigned int i=0; i < fields_object->size(); i++) 
-			if (str_compare((*fields_object)[i].props.name.c_str(), f_name)==0 || (name && str_compare((*fields_object)[i].props.name.c_str(), name)==0)) {
-	  			return (*fields_object)[i].val;
-			}
-      throw DbErrors("Field not found: %s",f_name);
-       }
+        if (str_compare((*fields_object)[i].props.name.c_str(), f_name)==0 || (name && str_compare((*fields_object)[i].props.name.c_str(), name)==0)) {
+          indexMap_Fields[indexMapID].resultIndex = i;
+          return (*fields_object)[i].val;
+        }
+    throw DbErrors("Field not found: %s",f_name);
+  }
   throw DbErrors("Dataset state is Inactive");
   //field_value fv;
   //return fv;
