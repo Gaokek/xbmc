@@ -4,36 +4,36 @@
 # Addon Provider: Jezz_X, Team Kodi
 msgid ""
 msgstr ""
-"Project-Id-Version: XBMC Main\n"
-"Report-Msgid-Bugs-To: http://trac.xbmc.org/\n"
+"Project-Id-Version: KODI Main\n"
+"Report-Msgid-Bugs-To: http://trac.kodi.tv/\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Kodi Translation Team\n"
-"Language-Team: Polish (http://www.transifex.com/projects/p/xbmc-main/language/pl/)\n"
+"Language-Team: Polish (Poland) (http://www.transifex.com/projects/p/kodi-main/language/pl_PL/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: pl\n"
+"Language: pl_PL\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 msgctxt "#31000"
-msgid "Change Your"
-msgstr "Kodi -"
+msgid "Change your"
+msgstr "Zmień"
 
 msgctxt "#31003"
-msgid "Power Options"
+msgid "Power options"
 msgstr "Opcje zasilania"
 
 msgctxt "#31004"
 msgid "Working..."
-msgstr "Uruchamianie"
+msgstr "Proszę czekać..."
 
 msgctxt "#31005"
-msgid "Hide Information"
-msgstr "Ukrywaj informacje"
+msgid "Hide information"
+msgstr "Ukryj informacje"
 
 msgctxt "#31006"
-msgid "View Options"
+msgid "View options"
 msgstr "Opcje widoku"
 
 msgctxt "#31008"
@@ -41,7 +41,7 @@ msgid "Full screen"
 msgstr "Pełny ekran"
 
 msgctxt "#31009"
-msgid "Total Duration"
+msgid "Total duration"
 msgstr "Całkowity czas trwania"
 
 msgctxt "#31022"
@@ -61,7 +61,7 @@ msgid "Items"
 msgstr "Pozycje"
 
 msgctxt "#31026"
-msgid "Misc Options"
+msgid "Misc options"
 msgstr "Opcje dodatkowe"
 
 msgctxt "#31027"
@@ -69,19 +69,19 @@ msgid "Location"
 msgstr "Lokalizacja"
 
 msgctxt "#31028"
-msgid "Poster Wrap"
+msgid "Poster wrap"
 msgstr "Kolejka plakatów"
 
 msgctxt "#31029"
 msgid "Fanart"
-msgstr "Tapeta"
+msgstr "Fototapeta"
 
 msgctxt "#31031"
-msgid "Pic Thumbs"
+msgid "Pic thumbs"
 msgstr "Miniatury"
 
 msgctxt "#31032"
-msgid "Image Wrap"
+msgid "Image wrap"
 msgstr "Kolejka obrazów"
 
 msgctxt "#31033"
@@ -90,10 +90,10 @@ msgstr "Informacje"
 
 msgctxt "#31039"
 msgid "Actions"
-msgstr "Akcje"
+msgstr "Operacje"
 
 msgctxt "#31040"
-msgid "Now Playing"
+msgid "Now playing"
 msgstr "Teraz odtwarzane"
 
 msgctxt "#31042"
@@ -114,15 +114,15 @@ msgstr "DO TYŁU"
 
 msgctxt "#31046"
 msgid "SEEKING"
-msgstr "PRZESZUKIWANIE"
+msgstr "PRZEWIJANIE"
 
 msgctxt "#31048"
-msgid "Visualisation Presets"
-msgstr "Zestaw ustawień wizualizacji"
+msgid "Visualisation presets"
+msgstr "Szablony wizualizacji"
 
 msgctxt "#31049"
-msgid "End Time"
-msgstr "Koniec o godzinie"
+msgid "End time"
+msgstr "Koniec"
 
 msgctxt "#31050"
 msgid "Sort: Ascending"
@@ -157,23 +157,23 @@ msgid "This file is stacked, select the part you want to play from."
 msgstr "Plik jest wynikiem scalania, wybierz część do odtwarzania."
 
 msgctxt "#31061"
-msgid "Current Selected"
+msgid "Current selected"
 msgstr "Aktualnie wybrany"
 
 msgctxt "#31101"
 msgid "Home screen options"
-msgstr "Opcje ekranu"
+msgstr "Opcje ekranu startowego"
 
 msgctxt "#31102"
 msgid "Background"
 msgstr "Tło"
 
 msgctxt "#31103"
-msgid "Show \"Paused\" in picture slide show"
-msgstr "Pokazuj \"Pauza\" podczas pokazu slajdów"
+msgid "Show \"Paused\" in picture slideshow"
+msgstr "Pokazuj \"Pauza\" poczas pokazu slajdów"
 
 msgctxt "#31104"
-msgid "Play Trailers in a window [COLOR=grey3](Video Information Dialogue Only)[/COLOR]"
+msgid "Play trailers in a window [COLOR=grey3](Video information dialogue only)[/COLOR]"
 msgstr "Odtwarzaj zwiastuny w oknie [COLOR=grey3](tylko w oknie informacji)[/COLOR]"
 
 msgctxt "#31106"
@@ -181,16 +181,16 @@ msgid "Miscellaneous options"
 msgstr "Opcje dodatkowe"
 
 msgctxt "#31107"
-msgid "Hide Flagging read from video filenames [COLOR=grey3](Blu-ray, HD-DVD)[/COLOR]"
+msgid "Hide flagging read from video filenames [COLOR=grey3](e.g. Blu-ray, HD-DVD)[/COLOR]"
 msgstr "Ukrywaj etykiety mediów wczytane z nazw pliku [COLOR=grey3](Blu-ray, HD-DVD)[/COLOR]"
 
 msgctxt "#31108"
-msgid "Hide Main Menu Buttons"
-msgstr "Ukrywanie przycisków menu"
+msgid "Hide main menu buttons"
+msgstr "Ukryj przyciski menu"
 
 msgctxt "#31109"
-msgid "Enable Custom Background"
-msgstr "Używaj niestandardowego tła"
+msgid "Enable custom background"
+msgstr "Pokazuj niestandardowe tło"
 
 msgctxt "#31110"
 msgid "Background path:"
@@ -205,28 +205,28 @@ msgid "Options"
 msgstr "Opcje"
 
 msgctxt "#31116"
-msgid "Show Recently added Albums"
-msgstr "Pokazuj ostatnio dodane albumy"
+msgid "Show recently added albums"
+msgstr "Pokazuj albumy ostatnio dodane"
 
 msgctxt "#31117"
-msgid "Show Recently added Videos"
-msgstr "Pokazuj ostatnio dodane wideo"
+msgid "Show recently added videos"
+msgstr "Pokazuj wideo ostatnio dodane"
 
 msgctxt "#31118"
-msgid "Home Page Programs Sub-menu"
-msgstr "Podmenu Programy ekranu Start"
+msgid "Home page programs submenu"
+msgstr "Podmenu Programy ekranu startowego"
 
 msgctxt "#31119"
-msgid "Hide Background Fanart"
-msgstr "Nie używaj tapet w roli tła"
+msgid "Hide background fanart"
+msgstr "Nie używaj fototapet w roli tła"
 
 msgctxt "#31124"
-msgid "Show Background \"Now Playing\" Video"
+msgid "Show background \"Now playing\" video"
 msgstr "Wyświetlaj panel Teraz odtwarzane w tle interfejsu"
 
 msgctxt "#31125"
-msgid "Show Background \"Now Playing\" Visualisation"
-msgstr "Używaj wizualizacji muzyki w roli tła"
+msgid "Show background \"Now playing\" visualisation"
+msgstr "Wyświetlaj wizualizację Teraz odtwarzane w tle interfejsu"
 
 msgctxt "#31126"
 msgid "Play TV theme songs in video library (TvTunes add-on)"
@@ -241,24 +241,24 @@ msgid "Lyrics"
 msgstr "Tekst utworu"
 
 msgctxt "#31129"
-msgid "Hide Fanart in full screen visualisation"
-msgstr "Ukrywaj tapety podczas pełnoekranowej wizualizacji"
+msgid "Hide fanart in full screen visualisation"
+msgstr "Ukrywaj fototapety podczas pełnoekranowej wizualizacji"
 
 msgctxt "#31132"
-msgid "Lyrics Add-on"
+msgid "Lyrics add-on"
 msgstr "Dodatek Tekst utworu"
 
 msgctxt "#31134"
-msgid "Home Page Videos Sub-menu"
-msgstr "Podmenu Wideo ekranu start"
+msgid "Home page \"Videos\" submenu"
+msgstr "Podmenu \"Wideo\" ekranu startowego"
 
 msgctxt "#31135"
-msgid "Home Page Music Sub-menu"
-msgstr "Podmenu Muzyka ekranu Start"
+msgid "Home page \"Music\" submenu"
+msgstr "Podmenu \"Muzyka\" ekranu startowego"
 
 msgctxt "#31136"
-msgid "Home Page Pictures Sub-menu"
-msgstr "Podmenu Obrazy ekranu Start"
+msgid "Home page \"Pictures\" submenu"
+msgstr "Podmenu \"Obrazy\" ekranu startowego"
 
 msgctxt "#31140"
 msgid "Music OSD"
@@ -277,11 +277,11 @@ msgid "Shortcuts"
 msgstr "Skróty"
 
 msgctxt "#31203"
-msgid "Choose Your Song"
+msgid "Choose your song"
 msgstr "Wybierz swój utwór"
 
 msgctxt "#31205"
-msgid "Lyrics Source"
+msgid "Lyrics source"
 msgstr "Źródło tekstów utworów"
 
 msgctxt "#31206"
@@ -289,19 +289,19 @@ msgid "Found"
 msgstr "Odnaleziono"
 
 msgctxt "#31207"
-msgid "Find More Items"
+msgid "Find more items"
 msgstr "Znajdź więcej pozycji"
 
 msgctxt "#31208"
-msgid "Upcoming Episodes"
-msgstr "Nadchodzące odcinki"
+msgid "Upcoming episodes"
+msgstr "Odcinki wkrótce na antenie"
 
 msgctxt "#31300"
-msgid "Current Temp"
+msgid "Current temperature"
 msgstr "Temperatura"
 
 msgctxt "#31301"
-msgid "Last Updated"
+msgid "Last updated"
 msgstr "Ostatnia aktualizacja"
 
 msgctxt "#31303"
@@ -309,51 +309,51 @@ msgid "Data provider"
 msgstr "Dostawca danych"
 
 msgctxt "#31307"
-msgid "Hide Fanart"
+msgid "Hide fanart"
 msgstr "Ukrywaj tapety"
 
 msgctxt "#31308"
-msgid "Movie Details"
+msgid "Movie details"
 msgstr "O filmie"
 
 msgctxt "#31309"
-msgid "Memory Used:"
+msgid "Memory used:"
 msgstr "Użycie pamięci:"
 
 msgctxt "#31310"
-msgid "Track Number"
-msgstr "Numer ścieżki"
+msgid "Track number"
+msgstr "Numer utworu"
 
 msgctxt "#31311"
 msgid "Fanart image[CR][CR]Unavailable[CR][CR] Click button to set"
-msgstr "Tapeta[CR][CR]niedostępna[CR][CR] Wciśnij przycisk, aby dodać"
+msgstr "Fototapeta[CR][CR]niedostępna[CR][CR]Naciśnij przycisk, aby dodać"
 
 msgctxt "#31312"
-msgid "Current Scraper"
+msgid "Current scraper"
 msgstr "Aktualny ekstraktor"
 
 msgctxt "#31313"
-msgid "Choose a Scraper"
+msgid "Choose a scraper"
 msgstr "Wybierz ekstraktor"
 
 msgctxt "#31314"
-msgid "Content Scanning Options"
+msgid "Content scanning options"
 msgstr "Opcje skanowania zawartości"
 
 msgctxt "#31317"
-msgid "Set Fanart Path"
+msgid "Set fanart path"
 msgstr "Ustaw ścieżkę do folderu tapet"
 
 msgctxt "#31319"
-msgid "Selected Profile"
+msgid "Selected profile"
 msgstr "Wybrany profil"
 
 msgctxt "#31320"
-msgid "Last Logged In"
+msgid "Last logged in"
 msgstr "Ostatnio zalogowany"
 
 msgctxt "#31321"
-msgid "Karaoke Song Selector"
+msgid "Karaoke song selector"
 msgstr "Selektor utworów Karaoke"
 
 msgctxt "#31322"
@@ -361,7 +361,7 @@ msgid "Aired"
 msgstr "Premiera"
 
 msgctxt "#31325"
-msgid "Playlist Options"
+msgid "Playlist options"
 msgstr "Opcje listy odtwarzania"
 
 msgctxt "#31326"
@@ -373,19 +373,19 @@ msgid "Resolution"
 msgstr "Rozdzielczość"
 
 msgctxt "#31328"
-msgid "Recently Added"
+msgid "Recently added"
 msgstr "Ostatnio dodane"
 
 msgctxt "#31329"
 msgid "[B]Timer set![/B] [COLOR=grey2] - System auto shutdown in[/COLOR]"
-msgstr "[B]Zamknięcie wg harmonogramu![/B] [COLOR=grey2] - Zamknięcie systemu za[/COLOR]"
+msgstr "[B]Zaplanowano zamknięcie systemu![/B] [COLOR=grey2] - Zamknięcie systemu za[/COLOR]"
 
 msgctxt "#31330"
-msgid "Click button to play[CR][CR]Movie trailer"
-msgstr "Wciśnij przycisk, aby[CR][CR]odtwarzać zwiastun"
+msgid "Click button to play[CR][CR]movie trailer"
+msgstr "Naciśnij przycisk, aby[CR][CR]odtworzyć zwiastun"
 
 msgctxt "#31331"
-msgid "Album Details"
+msgid "Album details"
 msgstr "O albumie"
 
 msgctxt "#31351"
@@ -397,7 +397,7 @@ msgid "Stop"
 msgstr "Stop"
 
 msgctxt "#31353"
-msgid "Fast Forward"
+msgid "Fast forward"
 msgstr "Przewiń"
 
 msgctxt "#31354"
@@ -409,7 +409,7 @@ msgid "Movie menu"
 msgstr "Menu filmu"
 
 msgctxt "#31356"
-msgid "Download Subtitles"
+msgid "Download subtitles"
 msgstr "Pobierz napisy"
 
 msgctxt "#31360"
@@ -429,7 +429,7 @@ msgid "Skin default"
 msgstr "Domyślne dla skóry"
 
 msgctxt "#31391"
-msgid "Skin default with no Caps"
+msgid "Skin default with no caps"
 msgstr "Domyślne dla skóry bez wielkich liter"
 
 msgctxt "#31392"
@@ -449,36 +449,36 @@ msgid "[B]CONFIGURE MUSIC SETTINGS[/B][CR][CR]Manage your music library · Set m
 msgstr "[B]KONFIGURACJA MUZYKI[/B][CR][CR]Biblioteka muzyki · Odtwarzanie · Listy utworów · CD-Audio · Karaoke"
 
 msgctxt "#31403"
-msgid "[B]CONFIGURE PICTURE SETTINGS[/B][CR][CR]Set picture listing options · Configure slideshows"
+msgid "[B]CONFIGURE PICTURE SETTINGS[/B][CR][CR]Set picture listing options · Configure slideshow"
 msgstr "[B]KONFIGURACJA OBRAZÓW[/B][CR][CR]Listy obrazów · Pokaz slajdów"
 
 msgctxt "#31404"
-msgid "[B]CONFIGURE WEATHER SETTINGS[/B][CR][CR]Set three cities to collect weather information"
-msgstr "[B]KONFIGURACJA POGODY[/B][CR][CR]Wybór dodatku · Wybór lokalizacji dla informacji pogodowych"
+msgid "[B]CONFIGURE WEATHER SETTINGS[/B][CR][CR]Set various cities to collect weather information"
+msgstr "[B]KONFIGURACJA POGODY[/B][CR][CR]Wybór lokalizacji pobierania informacji pogodowych"
 
 msgctxt "#31406"
 msgid "[B]CONFIGURE SYSTEM SETTINGS[/B][CR][CR]Setup and calibrate displays · Configure audio output · Setup remote controls[CR]Set power saving options · Enable debugging · Setup master lock"
-msgstr "[B]KONFIGURACJA SYSTEMU[/B][CR][CR]Wyświetlanie obrazu · Odtwarzanie dźwięku · Urządzenia wejściowe · Internet[CR]Oszczędzanie energii · Diagnozowanie błędów · Blokady"
+msgstr "[B]KONFIGURACJA SYSTEMU[/B][CR][CR]Wyświetlanie obrazu · Odtwarzanie dźwięku · Urządzenia wejściowe · Internet[CR]Oszczędzanie energii · Diagnostyka · Kontrola dostępu"
 
 msgctxt "#31408"
-msgid "[B]CONFIGURE ADD-ONS[/B][CR][CR]Manage your installed Add-ons · Browse for and install Add-ons from kodi.tv[CR]Modify Add-on settings"
-msgstr "[B]KONFIGURACJA DODATKÓW[/B][CR][CR]Zarządzanie zainstalowanymi dodatkami · Przeglądanie i instalowanie dodatków[CR]Ustawienia dodatków"
+msgid "[B]CONFIGURE ADD-ONS[/B][CR][CR]Manage your installed add-ons · Browse for and install add-ons from kodi.tv[CR]Modify add-on settings"
+msgstr "[B]KONFIGURACJA DODATKÓW[/B][CR][CR]Zarządzanie zainstalowanymi dodatkami · Przeglądanie i instalacja dodatków[CR]Modyfikacja ustawień dodatków"
 
 msgctxt "#31409"
 msgid "[B]CONFIGURE TV SETTINGS[/B][CR][CR]Change full screen info · Manage EPG data settings"
-msgstr "[B]KONFIGURACJA TELEWIZJI[/B][CR][CR]Menu ekranowe · Przewodnik programów · Nagrywanie"
+msgstr "[B]KONFIGURACJA TELEWIZJI[/B][CR][CR]Menu ekranowe · Przewodnik · Nagrywanie · Kontrola rodzicielska"
 
 msgctxt "#31410"
 msgid "[B]CONFIGURE SERVICE SETTINGS[/B][CR][CR]Setup control of Kodi via UPnP and HTTP · Configure file sharing[CR]Enable Zeroconf · Configure AirPlay"
 msgstr "[B]KONFIGURACJA USŁUG[/B][CR][CR]Zdalne sterowanie przez uPnP i HTTP · Współdzielenie plików[CR]Aktywacja Zeroconf · Ustawienia AirPlay"
 
 msgctxt "#31411"
-msgid "First run help...."
+msgid "First run help..."
 msgstr "Wskazówki na początek..."
 
 msgctxt "#31412"
-msgid "This tab signifies that there is a menu off to the side of this window that contains extra options for this section.  To access the menu, navigate to the left with your remote control or keyboard or place your mouse pointer over the tab. [CR][CR]Click \"Ok\" to close this dialogue. It will not appear again."
-msgstr "Ta zakładka oznacza iż za krawędzią tego okna jest menu, które zawiera dodatkowe opcje dla tej sekcji. Aby dostać się do tego menu, skieruj się w lewo przy pomocy pilota, klawiszy lub umieść myszkę nad zakładką.[CR][CR]Wciśnij \"OK\" by zamknąć okno. Nie pojawi się ono ponownie."
+msgid "This tab signifies that there is a menu off to the side of this window that contains extra options for this section. To access the menu, navigate to the left with your remote control or keyboard or place your mouse pointer over the tab. [CR][CR]Click \"OK\" to close this dialogue. It will not appear again."
+msgstr "Ta zakładka oznacza iż za krawędzią tego okna jest menu, które zawiera dodatkowe opcje dla tej sekcji. Aby dostać się do tego menu, nawiguj w lewo przy pomocy pilota, klawiszy lub umieść wskaźnik myszy nad zakładką.[CR][CR]Naciśnij \"OK\", aby zamknąć to okno. Nie pojawi się ono ponownie."
 
 msgctxt "#31413"
 msgid "Local subtitle available"
@@ -489,7 +489,7 @@ msgid "Login"
 msgstr "Logowanie"
 
 msgctxt "#31421"
-msgid "Select your Kodi user Profile[CR]to login and continue"
+msgid "Select your Kodi user profile[CR]to login and continue"
 msgstr "Wybierz profil użytkownika[CR]do zalogowania, aby kontynuować"
 
 msgctxt "#31422"
@@ -501,23 +501,23 @@ msgid "Select the profile that will be used at startup when the login screen is 
 msgstr "Wybierz profil, który będzie używany w przypadku wyłączenia ekranu logowania."
 
 msgctxt "#31501"
-msgid "Scheduled Time"
+msgid "Scheduled time"
 msgstr "Zaplanowany czas"
 
 msgctxt "#31502"
-msgid "Live TV"
+msgid "TV"
 msgstr "Telewizja"
 
 msgctxt "#31503"
-msgid "Add Group"
+msgid "Add group"
 msgstr "Dodaj grupę"
 
 msgctxt "#31504"
-msgid "Rename Group"
+msgid "Rename group"
 msgstr "Przemianuj grupę"
 
 msgctxt "#31505"
-msgid "Delete Group"
+msgid "Delete group"
 msgstr "Usuń grupę"
 
 msgctxt "#31506"
@@ -525,31 +525,31 @@ msgid "Available[CR]Groups"
 msgstr "Dostępne[CR]grupy"
 
 msgctxt "#31509"
-msgid "Channel Group"
+msgid "Channel group"
 msgstr "Grupa kanałów"
 
 msgctxt "#31510"
-msgid "Timer Set"
-msgstr "Zamknięcie wg harmonogramu"
+msgid "Timer set"
+msgstr "Zaplanowane zamknięcie"
 
 msgctxt "#31511"
-msgid "Channel Options"
+msgid "Channel options"
 msgstr "Opcje kanału"
 
 msgctxt "#31901"
-msgid "36 Hour Forecast"
+msgid "36-hour forecast"
 msgstr "Prognoza 36 godzinna"
 
 msgctxt "#31902"
-msgid "Hourly Forecast"
-msgstr "Prognoza godzinna"
+msgid "Hourly forecast"
+msgstr "Prognoza godzinowa"
 
 msgctxt "#31903"
-msgid "Weekend Forecast"
+msgid "Weekend forecast"
 msgstr "Prognoza na weekend"
 
 msgctxt "#31904"
-msgid "Daily Forecast"
+msgid "Daily forecast"
 msgstr "Prognoza dzienna"
 
 msgctxt "#31905"
@@ -557,8 +557,8 @@ msgid "Forecast"
 msgstr "Prognoza"
 
 msgctxt "#31908"
-msgid "Chance of Precipitation"
-msgstr "Możliwość opadów"
+msgid "Chance of precipitation"
+msgstr "Możliwe opady"
 
 msgctxt "#31909"
 msgid "Fetching forecast info..."

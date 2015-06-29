@@ -556,6 +556,9 @@ bool CApplication::Create()
         "Product: %s, Device: %s, Board: %s - Manufacturer: %s, Brand: %s, Model: %s, Hardware: %s",
         CJNIBuild::PRODUCT.c_str(), CJNIBuild::DEVICE.c_str(), CJNIBuild::BOARD.c_str(),
         CJNIBuild::MANUFACTURER.c_str(), CJNIBuild::BRAND.c_str(), CJNIBuild::MODEL.c_str(), CJNIBuild::HARDWARE.c_str());
+  std::string extstorage;
+  bool extready = CXBMCApp::GetExternalStorage(extstorage);
+  CLog::Log(LOGNOTICE, "External storage path = %s; status = %s", extstorage.c_str(), extready ? "ok" : "nok");
 #endif
 
 #if defined(__arm__)
@@ -2413,7 +2416,7 @@ bool CApplication::OnAction(const CAction &action)
   }
 
   // Check for global volume control
-  if (action.GetAmount() && (action.GetID() == ACTION_VOLUME_UP || action.GetID() == ACTION_VOLUME_DOWN || action.GetID() == ACTION_VOLUME_SET))
+  if ((action.GetAmount() && (action.GetID() == ACTION_VOLUME_UP || action.GetID() == ACTION_VOLUME_DOWN) || action.GetID() == ACTION_VOLUME_SET))
   {
     if (!m_pPlayer->IsPassthrough())
     {
@@ -3313,6 +3316,9 @@ void CApplication::OnPlayBackEnded()
 #ifdef HAS_PYTHON
   g_pythonParser.OnPlayBackEnded();
 #endif
+#ifdef TARGET_ANDROID
+  CXBMCApp::OnPlayBackEnded();
+#endif
 
   CVariant data(CVariant::VariantTypeObject);
   data["end"] = true;
@@ -3334,6 +3340,9 @@ void CApplication::OnPlayBackStarted()
   // informs python script currently running playback has started
   // (does nothing if python is not loaded)
   g_pythonParser.OnPlayBackStarted();
+#endif
+#ifdef TARGET_ANDROID
+  CXBMCApp::OnPlayBackStarted();
 #endif
 
   CGUIMessage msg(GUI_MSG_PLAYBACK_STARTED, 0, 0);
@@ -3369,6 +3378,9 @@ void CApplication::OnPlayBackStopped()
 #ifdef HAS_PYTHON
   g_pythonParser.OnPlayBackStopped();
 #endif
+#ifdef TARGET_ANDROID
+  CXBMCApp::OnPlayBackStopped();
+#endif
 
   CVariant data(CVariant::VariantTypeObject);
   data["end"] = false;
@@ -3383,6 +3395,9 @@ void CApplication::OnPlayBackPaused()
 #ifdef HAS_PYTHON
   g_pythonParser.OnPlayBackPaused();
 #endif
+#ifdef TARGET_ANDROID
+  CXBMCApp::OnPlayBackPaused();
+#endif
 
   CVariant param;
   param["player"]["speed"] = 0;
@@ -3394,6 +3409,9 @@ void CApplication::OnPlayBackResumed()
 {
 #ifdef HAS_PYTHON
   g_pythonParser.OnPlayBackResumed();
+#endif
+#ifdef TARGET_ANDROID
+  CXBMCApp::OnPlayBackResumed();
 #endif
 
   CVariant param;
