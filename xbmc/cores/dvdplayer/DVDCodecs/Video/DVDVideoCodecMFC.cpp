@@ -15,6 +15,7 @@
   #include "settings/AdvancedSettings.h"
   #include "utils/fastmemcpy.h"
   #include "utils/log.h"
+  #include "utils/BitstreamConverter.h"
 #endif
 
 #include "DVDVideoCodecMFC.h"
@@ -33,6 +34,13 @@
 #endif
 #define CLASSNAME "CDVDVideoCodecMFC"
 
+typedef struct frame_queue {
+  double dts;
+  double pts;
+  double sort_time;
+  struct frame_queue *nextframe;
+} frame_queue;
+
 CDVDVideoCodecMFC::CDVDVideoCodecMFC() : CDVDVideoCodec() {
 
   m_iDecoderHandle = NULL;
@@ -45,6 +53,8 @@ CDVDVideoCodecMFC::CDVDVideoCodecMFC() : CDVDVideoCodec() {
   m_Buffer = NULL;
   m_BufferNowOnScreen = NULL;
 
+  m_mpeg2_sequence = NULL;
+  m_bitstream = NULL;
   memzero(m_videoBuffer);
 
 }
@@ -150,7 +160,6 @@ bool CDVDVideoCodecMFC::OpenDevices() {
   }
 
   return false;
-
 }
 
 void CDVDVideoCodecMFC::Dispose() {
@@ -185,50 +194,34 @@ void CDVDVideoCodecMFC::Dispose() {
     m_iDecoderHandle = NULL;
   }
 
+  if (m_mpeg2_sequence)
+    delete m_mpeg2_sequence, m_mpeg2_sequence = NULL;
+
+  if (m_bitstream)
+  {
+    delete m_bitstream, m_bitstream = NULL;
+  }
 }
 
-bool CDVDVideoCodecMFC::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) {
+bool CDVDVideoCodecMFC::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
+{
   struct v4l2_format fmt;
-  struct v4l2_crop crop;
-  struct V4l2SinkBuffer sinkBuffer;
   V4l2Device *finalSink = NULL;
-  int finalFormat = -1;
-  int resultVideoWidth;
-  int resultVideoHeight;
-  int resultLineSize;
-  unsigned int extraSize = 0;
-  uint8_t *extraData = NULL;
 
-  m_hints = hints;
-  if (m_hints.software)
+  if (hints.software)
     return false;
 
   Dispose();
 
-  m_Buffer = new V4l2SinkBuffer();
-  m_BufferNowOnScreen = new V4l2SinkBuffer();
-  m_BufferNowOnScreen->iIndex = -1;
-  m_bVideoConvert = false;
+  m_hints = hints;
+
   m_bDropPictures = false;
+  m_finalFormat = -1;
   memzero(m_videoBuffer);
 
   if (!OpenDevices()) {
     CLog::Log(LOGERROR, "%s::%s - No Exynos MFC Decoder/Converter found", CLASSNAME, __func__);
     return false;
-  }
-
-  m_bVideoConvert = m_converter.Open(m_hints.codec, (uint8_t *)m_hints.extradata, m_hints.extrasize, true);
-
-  if(m_bVideoConvert) {
-    if(m_converter.GetExtraData() != NULL && m_converter.GetExtraSize() > 0) {
-      extraSize = m_converter.GetExtraSize();
-      extraData = m_converter.GetExtraData();
-    }
-  } else {
-    if(m_hints.extrasize > 0 && m_hints.extradata != NULL) {
-      extraSize = m_hints.extrasize;
-      extraData = (uint8_t*)m_hints.extradata;
-    }
   }
 
   // Test what formats we can get finally
@@ -239,16 +232,16 @@ bool CDVDVideoCodecMFC::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) {
   fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   fmt.fmt.pix_mp.pixelformat = V4L2_PIX_FMT_NV12M;
   if (ioctl(finalSink->device, VIDIOC_TRY_FMT, &fmt) == 0)
-    finalFormat = V4L2_PIX_FMT_NV12M;
+    m_finalFormat = V4L2_PIX_FMT_NV12M;
   memzero(fmt);
   // Test YUV420 3 Planes Y/Cb/Cr
   fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   fmt.fmt.pix_mp.pixelformat = V4L2_PIX_FMT_YUV420M;
   if (ioctl(finalSink->device, VIDIOC_TRY_FMT, &fmt) == 0)
-    finalFormat = V4L2_PIX_FMT_YUV420M;
+    m_finalFormat = V4L2_PIX_FMT_YUV420M;
 
   // No suitable output formats available
-  if (finalFormat < 0) {
+  if (m_finalFormat < 0) {
     CLog::Log(LOGERROR, "%s::%s - No suitable format on %s to convert to found", CLASSNAME, __func__, finalSink->name);
     return false;
   }
@@ -263,10 +256,16 @@ bool CDVDVideoCodecMFC::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) {
       m_name = "mfc-vc1";
       break;
     case AV_CODEC_ID_MPEG1VIDEO:
-      fmt.fmt.pix_mp.pixelformat = V4L2_PIX_FMT_MPEG1;
-      m_name = "mfc-mpeg1";
-      break;
-    case AV_CODEC_ID_MPEG2VIDEO:
+	case AV_CODEC_ID_MPEG2VIDEO:
+      //m_mpeg2_sequence_pts = 0;
+      m_mpeg2_sequence = new mpeg2_sequence;
+      m_mpeg2_sequence->width  = m_hints.width;
+      m_mpeg2_sequence->height = m_hints.height;
+      m_mpeg2_sequence->ratio  = m_hints.aspect;
+      if (m_hints.fpsrate > 0 && m_hints.fpsscale != 0)
+        m_mpeg2_sequence->rate = (float)m_hints.fpsrate / m_hints.fpsscale;
+      else
+        m_mpeg2_sequence->rate = 1.0; 
       fmt.fmt.pix_mp.pixelformat = V4L2_PIX_FMT_MPEG2;
       m_name = "mfc-mpeg2";
       break;
@@ -281,6 +280,18 @@ bool CDVDVideoCodecMFC::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) {
     case AV_CODEC_ID_H264:
       fmt.fmt.pix_mp.pixelformat = V4L2_PIX_FMT_H264;
       m_name = "mfc-h264";
+      // convert h264-avcC to h264-annex-b as h264-avcC
+      // under streamers can have issues when seeking.
+      if (m_hints.extradata && *(uint8_t*)m_hints.extradata == 1)
+      {
+        m_bitstream = new CBitstreamConverter;
+        m_bitstream->Open(m_hints.codec, (uint8_t*)m_hints.extradata, m_hints.extrasize, true);
+        // make sure we do not leak the existing m_hints.extradata
+        free(m_hints.extradata);
+        m_hints.extrasize = m_bitstream->GetExtraSize();
+        m_hints.extradata = malloc(m_hints.extrasize);
+        memcpy(m_hints.extradata, m_bitstream->GetExtraData(), m_hints.extrasize);
+      }
       break;
     default:
       return false;
@@ -290,16 +301,42 @@ bool CDVDVideoCodecMFC::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) {
   // Set encoded format
   if (!m_MFCOutput->SetFormat(&fmt))
     return false;
+
   // Init with number of input buffers predefined
   if (!m_MFCOutput->Init(INPUT_BUFFERS))
     return false;
+ 
+  return OpenBuffers();
+}
+
+bool CDVDVideoCodecMFC::OpenBuffers()
+{
+  struct v4l2_format fmt;
+  struct v4l2_crop crop;
+  struct V4l2SinkBuffer sinkBuffer;
+  int resultVideoWidth;
+  int resultVideoHeight;
+  int resultLineSize;
+
+  // For mpeg2 we are able to wait for all information available (m_mpeg2_sequence)
+  if(!m_hints.width || !m_hints.height || (m_mpeg2_sequence && !(m_hints.aspect>0.0)))
+  {
+    CLog::Log(LOGDEBUG, "%s::%s - hints not complete %s  ", CLASSNAME, __func__, (m_mpeg2_sequence !=0?"continue":"exit"));
+    return m_mpeg2_sequence !=0;
+  }
+  delete m_mpeg2_sequence;
+  m_mpeg2_sequence = 0;
+
+  m_Buffer = new V4l2SinkBuffer();
+  m_BufferNowOnScreen = new V4l2SinkBuffer();
+  m_BufferNowOnScreen->iIndex = -1;
 
   // Get empty buffer to fill
   if (!m_MFCOutput->GetBuffer(&sinkBuffer))
     return false;
   // Fill it with the header
-  sinkBuffer.iBytesUsed[0] = extraSize;
-  memcpy(sinkBuffer.cPlane[0], extraData, extraSize);
+  sinkBuffer.iBytesUsed[0] = m_hints.extrasize;
+  memcpy(sinkBuffer.cPlane[0], m_hints.extradata, m_hints.extrasize);
   // Enqueue buffer
   if (!m_MFCOutput->PushBuffer(&sinkBuffer))
     return false;
@@ -309,7 +346,7 @@ bool CDVDVideoCodecMFC::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) {
   memzero(fmt);
   // If there is no converter set output format on the MFC Capture sink
   if (!m_iConverterHandle) {
-    fmt.fmt.pix_mp.pixelformat = finalFormat;
+    fmt.fmt.pix_mp.pixelformat = m_finalFormat;
     if (!m_MFCCapture->SetFormat(&fmt))
         return false;
   }
@@ -362,7 +399,7 @@ bool CDVDVideoCodecMFC::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) {
     // Set the final picture format and the same picture dimension settings to FIMC Capture
     // as picture crop coming from MFC (original picture dimensions)
     memzero(fmt);
-    fmt.fmt.pix_mp.pixelformat = finalFormat;
+    fmt.fmt.pix_mp.pixelformat = m_finalFormat;
     fmt.fmt.pix_mp.width = crop.c.width;
     fmt.fmt.pix_mp.height = crop.c.height;
     fmt.fmt.pix_mp.field = V4L2_FIELD_ANY;
@@ -409,6 +446,9 @@ bool CDVDVideoCodecMFC::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) {
       m_videoBuffer.iDisplayHeight = ((int)lrint(m_videoBuffer.iWidth / m_hints.aspect)) & -3;
     }
   }
+  CLog::Log(LOGDEBUG, "%s::%s - aspect assignement: aspect: %0.4f, forced_aspect:%d (w:%d,h:%d,dw:%d,dh:%d))", CLASSNAME, __func__,
+    m_hints.aspect, m_hints.forced_aspect, m_videoBuffer.iWidth, m_videoBuffer.iHeight, m_videoBuffer.iDisplayWidth, m_videoBuffer.iDisplayHeight);
+
 
   m_videoBuffer.data[0]         = NULL;
   m_videoBuffer.data[1]         = NULL;
@@ -421,11 +461,11 @@ bool CDVDVideoCodecMFC::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) {
   m_videoBuffer.iLineSize[0]    = resultLineSize;
   m_videoBuffer.iLineSize[3]    = 0;
 
-  if (finalFormat == V4L2_PIX_FMT_NV12M) {
+  if (m_finalFormat == V4L2_PIX_FMT_NV12M) {
     m_videoBuffer.format          = RENDER_FMT_NV12;
     m_videoBuffer.iLineSize[1]    = resultLineSize;
     m_videoBuffer.iLineSize[2]    = 0;
-  } else if (finalFormat == V4L2_PIX_FMT_YUV420M) {
+  } else if (m_finalFormat == V4L2_PIX_FMT_YUV420M) {
     /*
     Due to BUG in MFC v8 (-XU3) firmware the Y plane of the picture has the right line size,
      but the U and V planes line sizes are actually halves of Y plane line size padded to 32
@@ -440,10 +480,7 @@ bool CDVDVideoCodecMFC::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options) {
   m_BufferNowOnScreen->iIndex = -1;
   m_bCodecHealthy = true;
 
-  CLog::Log(LOGNOTICE, "%s::%s - MFC Setup succesfull (%dx%d, linesize %d, format 0x%x), start streaming", CLASSNAME, __func__, resultVideoWidth, resultVideoHeight, resultLineSize, finalFormat);
-
-  return true;
-
+  CLog::Log(LOGNOTICE, "%s::%s - MFC Setup succesfull (%dx%d, linesize %d, format 0x%x), start streaming", CLASSNAME, __func__, resultVideoWidth, resultVideoHeight, resultLineSize, m_finalFormat);
 }
 
 void CDVDVideoCodecMFC::SetDropState(bool bDrop) {
@@ -453,13 +490,19 @@ void CDVDVideoCodecMFC::SetDropState(bool bDrop) {
     m_videoBuffer.iFlags |=  DVP_FLAG_DROPPED;
   else
     m_videoBuffer.iFlags &= ~DVP_FLAG_DROPPED;
-
 }
 
 int CDVDVideoCodecMFC::Decode(BYTE* pData, int iSize, double dts, double pts) {
 
   if (m_hints.ptsinvalid)
     pts = DVD_NOPTS_VALUE;
+
+  // maybe we need some more data for mpeg2?
+  if(needMpeg2Data(pData,iSize,dts,pts))
+  {
+    debug_log(LOGDEBUG, "%s::%s - more data required (input frame iSize %d, pts %lf, dts %lf)", CLASSNAME, __func__, iSize, pts, dts);
+	return VC_BUFFER;
+  }
 
   //unsigned int dtime = XbmcThreads::SystemClockMillis();
   debug_log(LOGDEBUG, "%s::%s - input frame iSize %d, pts %lf, dts %lf", CLASSNAME, __func__, iSize, pts, dts);
@@ -468,10 +511,10 @@ int CDVDVideoCodecMFC::Decode(BYTE* pData, int iSize, double dts, double pts) {
     int demuxer_bytes = iSize;
     uint8_t *demuxer_content = pData;
 
-    if(m_bVideoConvert) {
-      m_converter.Convert(demuxer_content, demuxer_bytes);
-      demuxer_bytes = m_converter.GetConvertSize();
-      demuxer_content = m_converter.GetConvertBuffer();
+    if(m_bitstream) {
+      m_bitstream->Convert(demuxer_content, demuxer_bytes);
+      demuxer_bytes = m_bitstream->GetConvertSize();
+      demuxer_content = m_bitstream->GetConvertBuffer();
     }
 
     m_MFCOutput->Poll(1000/3); // Wait up to 0.3 of a second for buffer availability
@@ -551,6 +594,78 @@ int CDVDVideoCodecMFC::Decode(BYTE* pData, int iSize, double dts, double pts) {
   // Picture is finally ready to be processed further and more info can be enqueued
   return VC_PICTURE | VC_BUFFER;
 
+}
+
+bool CDVDVideoCodecMFC::needMpeg2Data(uint8_t *pData, int iSize, double dts, double pts)
+{
+  if (m_mpeg2_sequence)
+  {
+    // probe demux for sequence_header_code NAL and
+    // decode aspect ratio and frame rate.
+    if (CBitstreamConverter::mpeg2_sequence_header(pData, iSize, m_mpeg2_sequence))
+    {
+	  /*
+      m_mpeg2_sequence_pts = pts;
+      if (m_mpeg2_sequence_pts == DVD_NOPTS_VALUE)
+        m_mpeg2_sequence_pts = dts;
+	  */
+      //m_framerate = m_mpeg2_sequence->rate;
+      //m_video_rate = (int)(0.5 + (96000.0 / m_framerate));
+
+      CLog::Log(LOGDEBUG, "%s:%s detected mpeg2 aspect ratio(%f), witdh(%d), height(%d)",
+        CLASSNAME, __func__, m_mpeg2_sequence->ratio, m_mpeg2_sequence->width, m_mpeg2_sequence->height);
+
+      // update m_hints for 1st frame fixup.
+      switch(m_mpeg2_sequence->rate_info)
+      {
+        default:
+        case 0x01:
+          m_hints.fpsrate = 24000.0;
+          m_hints.fpsscale = 1001.0;
+          break;
+        case 0x02:
+          m_hints.fpsrate = 24000.0;
+          m_hints.fpsscale = 1000.0;
+          break;
+        case 0x03:
+          m_hints.fpsrate = 25000.0;
+          m_hints.fpsscale = 1000.0;
+          break;
+        case 0x04:
+          m_hints.fpsrate = 30000.0;
+          m_hints.fpsscale = 1001.0;
+          break;
+        case 0x05:
+          m_hints.fpsrate = 30000.0;
+          m_hints.fpsscale = 1000.0;
+          break;
+        case 0x06:
+          m_hints.fpsrate = 50000.0;
+          m_hints.fpsscale = 1000.0;
+          break;
+        case 0x07:
+          m_hints.fpsrate = 60000.0;
+          m_hints.fpsscale = 1001.0;
+          break;
+        case 0x08:
+          m_hints.fpsrate = 60000.0;
+          m_hints.fpsscale = 1000.0;
+          break;
+      }
+      m_hints.width    = m_mpeg2_sequence->width;
+      m_hints.height   = m_mpeg2_sequence->height;
+      m_hints.aspect   = m_mpeg2_sequence->ratio;
+      m_hints.extrasize = iSize;
+      free(m_hints.extradata);
+	  m_hints.extrasize=iSize;
+      m_hints.extradata = malloc(iSize);
+      memcpy(m_hints.extradata, pData, iSize);
+	  OpenBuffers();
+      return false;
+	}
+    return true;
+  }
+  return false;
 }
 
 void CDVDVideoCodecMFC::Reset() {

@@ -3,7 +3,6 @@
 #ifndef THIS_IS_NOT_XBMC
   #include "DVDVideoCodec.h"
   #include "DVDStreamInfo.h"
-  #include "utils/BitstreamConverter.h"
   #include "xbmc/linux/LinuxV4l2Sink.h"
 #else
   #include "xbmcstubs.h"
@@ -21,6 +20,10 @@
 
 #define memzero(x) memset(&(x), 0, sizeof (x))
 
+struct frame_queue;
+struct mpeg2_sequence;
+class CBitstreamConverter;
+
 class CDVDVideoCodecMFC : public CDVDVideoCodec
 {
 public:
@@ -37,6 +40,9 @@ public:
   virtual const char* GetName() { return m_name.c_str(); }; // m_name is never changed after open
 
 protected:
+  bool OpenBuffers();
+  bool needMpeg2Data(uint8_t *pData, int iSize, double dts, double pts);
+  
   std::string m_name;
 
   bool m_bCodecHealthy;
@@ -52,10 +58,11 @@ protected:
   V4l2SinkBuffer *m_Buffer;
   V4l2SinkBuffer *m_BufferNowOnScreen;
 
-  bool m_bVideoConvert;
   CDVDStreamInfo m_hints;
 
-  CBitstreamConverter m_converter;
+  mpeg2_sequence *m_mpeg2_sequence;
+  CBitstreamConverter *m_bitstream;
+  int m_finalFormat;
   bool m_bDropPictures;
 
   DVDVideoPicture   m_videoBuffer;
