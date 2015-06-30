@@ -26,7 +26,6 @@
  *
  **********************************************************************/
 
-
 #ifndef _DATASET_H
 #define _DATASET_H
 
@@ -240,8 +239,47 @@ protected:
    Essentually field idobject must present in the
    result set (select_sql statement) */
 
+   unsigned int indexMapID;
 
+   struct INDEXMAPFIELD    //Struct to store a indexMapped field access entry
+   {
+     INDEXMAPFIELD(const char *name):resultIndex(~0), strName(name){};
+     bool operator < (const INDEXMAPFIELD &other) const {return strName < other.strName;};
+     unsigned int resultIndex;
+     std::string strName;
+   };
+   
+   struct INDEXMAPSORTER
+   {
+     INDEXMAPSORTER(const std::vector<INDEXMAPFIELD> &c):c(c){};
+     bool operator()(const unsigned int &v,const INDEXMAPFIELD &o)const
+     {
+       return c[v] < o;
+     };
+     bool operator()(const unsigned int &v1,const unsigned int &v2)const
+     {
+       return c[v1] < c[v2];
+     };
+     bool operator()(const INDEXMAPFIELD &o,const unsigned int &v)const
+     {
+       return o< c[v];
+     };
+   private:
+     const std::vector<INDEXMAPFIELD> &c;
+   }; 
 
+   std::vector<INDEXMAPFIELD> indexMap_Fields;
+   std::vector<unsigned int> indexMap_Sorter;
+/* We build up a access list which holds a translation of strings to indices.
+   Assumption for the usage is, that rows of a resultset are normally accessed in 
+   always the same field order.
+   We first look into this list and if we don't get a match we use the
+   slower but more flexible field_value method
+   For the case the retrieval is against our assumption, guessed_sorter is
+   used to speed-up the search   */
+
+   /* Get the column index from a string field_value request */
+   bool has_indexMap(const char *f_name);
 
 /* Arrays for searching */
 //  StringList names, values;
@@ -287,8 +325,7 @@ public:
 /* status active is OK query */
   virtual bool isActive(void) { return active; }
 
-  virtual void setSqlParams(const char *sqlFrmt, sqlType t, ...); 
-
+  virtual void setSqlParams(const char *sqlFrmt, sqlType t, ...);
 
 /* error handling */
 //  virtual void halt(const char *msg);
