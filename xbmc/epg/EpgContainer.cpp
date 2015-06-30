@@ -235,20 +235,16 @@ void CEpgContainer::LoadFromDB(void)
 
 bool CEpgContainer::PersistTables(void)
 {
-  m_critSection.lock();
-  std::map<unsigned int, CEpg*> copy = m_epgs;
-  m_critSection.unlock();
-  return m_database.Persist(copy);
+  CSingleLock lock(m_critSection);
+  return m_database.Persist(m_epgs);
 }
 
 bool CEpgContainer::PersistAll(void)
 {
   bool bReturn(true);
-  m_critSection.lock();
-  std::map<unsigned int, CEpg*> copy = m_epgs;
-  m_critSection.unlock();
+  CSingleLock lock(m_critSection);
 
-  for (EPGMAP_CITR it = copy.begin(); it != copy.end() && !m_bStop; it++)
+  for (EPGMAP_CITR it = m_epgs.begin(); it != m_epgs.end() && !m_bStop; it++)
   {
     CEpg *epg = it->second;
     if (epg && epg->NeedsSave())
