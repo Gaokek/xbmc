@@ -24,6 +24,19 @@
 #include <vector>
 
 #include "EGLNativeType.h"
+#include <linux/fb.h>
+
+#ifndef _FBDEV_WINDOW_H_
+// Define it right here, since some platforms doesn't has fbdev_window.h at all.
+// This will not make it fail on these platforms badly, since it will fail softly anyway on some other init steps.
+#define _FBDEV_WINDOW_H_
+typedef struct fbdev_window
+{
+  unsigned short width;
+  unsigned short height;
+} fbdev_window;
+#endif
+
 class CEGLNativeTypeAmlogic : public CEGLNativeType
 {
 public:
@@ -52,12 +65,14 @@ public:
 
 protected:
   bool SetDisplayResolution(const char *resolution);
-  void SetupVideoScaling(const char *mode);
-  void DisableFreeScale();
 
 private:
   void SetFramebufferResolution(const RESOLUTION_INFO &res) const;
   void SetFramebufferResolution(int width, int height) const;
+  void FreeScale(bool state);
+  void DealWithScale(const RESOLUTION_INFO &res);
+  void SetScreenScale(int width, int height, bool state);
+  bool IsHdmiConnected() const;
 
   std::string m_framebuffer_name;
 };
