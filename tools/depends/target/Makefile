@@ -65,8 +65,8 @@ ifeq ($(OS),linux)
   DEPENDS += libuuid
   #not for raspberry pi
   ifneq ($(TARGET_PLATFORM),raspberry-pi)
-    DEPENDS += libsdl2 linux-system-libs
-    LINUX_SYSTEM_LIBS = linux-system-libs
+    #DEPENDS += libsdl2 linux-system-libs
+    #LINUX_SYSTEM_LIBS = linux-system-libs
   endif
   DEPENDS += alsa-lib
   ALSA_LIB = alsa-lib

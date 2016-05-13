@@ -25,8 +25,10 @@ ifeq ($(CROSS_COMPILING), yes)
   ffmpg_config += --arch=$(CPU) --enable-cross-compile
 endif
 ifeq ($(OS), linux)
-  ffmpg_config += --target-os=$(OS) --cpu=$(CPU)
-  ffmpg_config += --enable-vdpau --enable-vaapi --enable-pic
+  #ffmpg_config += --target-os=$(OS) --cpu=$(CPU)
+  #ffmpg_config += --enable-vdpau --enable-vaapi
+  ffmpg_config += --target-os=$(OS) --cpu=cortex-a5 --enable-neon
+  #ffmpg_config += --enable-libvorbis --enable-muxer=ogg --enable-encoder=libvorbis
 endif
 ifeq ($(OS), android)
   ifeq ($(findstring arm, $(CPU)), arm)
