@@ -540,7 +540,7 @@ bool CAESinkALSA::Initialize(AEAudioFormat &format, std::string &device)
   if (aml_present())
   {
     aml_set_audio_passthrough(m_passthrough);
-    device = "default";
+    device = "sysdefault";
   }
 #endif
 
@@ -1142,7 +1142,7 @@ void CAESinkALSA::EnumerateDevicesEx(AEDeviceInfoList &list, bool force)
    * will automatically add "@" instead to enable surroundXX mangling.
    * We don't want to do that if "default" can handle multichannel
    * itself (e.g. in case of a pulseaudio server). */
-  EnumerateDevice(list, "default", "", config);
+  EnumerateDevice(list, "sysdefault", "", config);
 
   void **hints;
 
@@ -1165,7 +1165,8 @@ void CAESinkALSA::EnumerateDevicesEx(AEDeviceInfoList &list, bool force)
       std::string baseName = std::string(name);
       baseName = baseName.substr(0, baseName.find(':'));
 
-      if (strcmp(name, "default") == 0)
+      if (strcmp(name, "default") == 0
+|| strcmp(name, "sysdefault") == 0)
       {
         /* added already, but lets get the description if we have one */
         if (desc)
@@ -1217,7 +1218,7 @@ void CAESinkALSA::EnumerateDevicesEx(AEDeviceInfoList &list, bool force)
   m_controlMonitor.Start();
 
   /* set the displayname for default device */
-  if (!list.empty() && list[0].m_deviceName == "default")
+  if (!list.empty() && (list[0].m_deviceName == "default" || list[0].m_deviceName == "sysdefault"))
   {
     /* If we have one from a hint (DESC), use it */
     if (!defaultDescription.empty())
@@ -1508,7 +1509,7 @@ void CAESinkALSA::EnumerateDevice(AEDeviceInfoList &list, const std::string &dev
     }
   }
 
-  if (device == "default" && channels == 2)
+  if ((device == "default" || device == "sysdefault") && channels == 2)
   {
     /* This looks like the ALSA standard default stereo dmix device, we
      * probably want to use "@" instead to get surroundXX. */
