@@ -8,6 +8,7 @@ TARBALLS_LOCATION=@use_tarballs@
 PLATFORM=@deps_dir@
 HOST=@use_host@
 CPU=@use_cpu@
+ARCH=@platform_arch@
 NATIVEPLATFORM=@build_cpu@-@build_os@-native
 SDK_PLATFORM=@use_sdk@
 RETRIEVE_TOOL=@CURL@

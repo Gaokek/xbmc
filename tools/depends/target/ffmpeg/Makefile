@@ -21,11 +21,9 @@ ffmpg_config += --enable-encoder=wmav2 --enable-protocol=http
 ffmpg_config += --enable-gnutls
 ffmpg_config += --enable-encoder=png --enable-encoder=mjpeg
 
-ifeq ($(CROSS_COMPILING), yes)
-  ffmpg_config += --arch=$(CPU) --enable-cross-compile
-endif
+arch=$(CPU) 
 ifeq ($(OS), linux)
-  ffmpg_config += --target-os=$(OS) --cpu=$(CPU)
+  #ffmpg_config += --target-os=$(OS) --cpu=$(CPU)
   ffmpg_config += --enable-vdpau --enable-vaapi --enable-pic
 endif
 ifeq ($(OS), android)
@@ -56,12 +54,16 @@ ifeq ($(OS), osx)
 endif
 ifeq ($(findstring arm, $(CPU)), arm)
   ffmpg_config += --enable-pic --disable-armv5te --disable-armv6t2
+  arch = arm
 endif
 ifeq ($(findstring mips, $(CPU)), mips)
   ffmpg_config += --disable-mips32r2 --disable-mipsdspr1 --disable-mipsdspr2
 endif
 ifeq ($(Configuration), Release)
   ffmpg_config += --disable-debug
+endif
+ifeq ($(CROSS_COMPILING), yes)
+  ffmpg_config += --arch=${arch} --target-os=${OS} --enable-cross-compile
 endif
 
 

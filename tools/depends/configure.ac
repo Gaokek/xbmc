@@ -175,15 +175,19 @@ case $host in
     cross_compiling="yes"
   ;;
   arm*-*-linux-gnu*|arm*-*-linux-uclibc*)
+    platform_cflags+=" -Os -fPIC -DPIC"
+    platform_cxxflags="$platform_cflags"
+    platform_os="linux"
+    platform_arch="arm"
     if test "$use_platform" = "auto"; then
       if test "x$use_cpu" = "xauto"; then
         use_cpu=$host_cpu
       fi
       use_toolchain="${use_toolchain:-/usr}"
-      platform_cflags="-Os -fPIC -DPIC"
       platform_ldflags="-Wl,-rpath-link=$prefix/$deps_dir/lib"
-      platform_cxxflags="$platform_cflags"
-      platform_os="linux"
+    fi
+    if test "x$use_cpu" = "xarm-v7a"; then
+      platform_cflags+=" -march=armv7-a -mtune=cortex-a5 -mfpu=neon"
     fi
   ;;
   aarch64*-*-linux-gnu*|aarch*-*-linux-be*)
@@ -591,6 +595,7 @@ AC_SUBST(platform_cxxflags)
 AC_SUBST(platform_ldflags)
 AC_SUBST(platform_includes)
 AC_SUBST(platform_os)
+AC_SUBST(platform_arch)
 AC_SUBST(build_os)
 AC_SUBST(has_zlib)
 AC_SUBST(link_iconv)

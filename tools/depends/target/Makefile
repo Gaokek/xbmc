@@ -65,7 +65,7 @@ LINUX_SYSTEM_LIBS=
 ifeq ($(OS),linux)
   DEPENDS += libuuid
   #not for raspberry pi
-  ifneq ($(TARGET_PLATFORM),raspberry-pi)
+  ifneq ($(CROSS_COMPILING),yes)
     DEPENDS += libsdl2 linux-system-libs
     LINUX_SYSTEM_LIBS = linux-system-libs
   endif
