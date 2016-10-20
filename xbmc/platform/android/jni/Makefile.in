@@ -84,6 +84,7 @@ SRCS      += InetAddress.cpp
 SRCS      += NetworkInterface.cpp
 SRCS      += Rect.cpp
 SRCS      += MediaCrypto.cpp
+SRCS      += UUID.cpp
 
 LIB        = jni.a
 
