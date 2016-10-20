@@ -47,6 +47,7 @@
 #include "platform/android/jni/MediaCodecInfo.h"
 #include "platform/android/jni/Surface.h"
 #include "platform/android/jni/SurfaceTexture.h"
+#include "platform/android/jni/UUID.h"
 #include "platform/android/activity/AndroidFeatures.h"
 #include "settings/Settings.h"
 
@@ -378,6 +379,16 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
   m_codecControlFlags = 0;
   m_hints = hints;
   m_dec_retcode = VC_BUFFER;
+
+  if(m_hints.extrasize > 6 && strncmp((char*)m_hints.extradata,"CRYPTO", 6) == 0)
+  {
+    uint8_t *pData((uint8_t*)m_hints.extradata);pData += 6;
+    uint16_t cryptoSize(*((uint16_t*)pData));pData+=2;
+    m_cryptoData.assign((char*)pData, (char*)pData+(cryptoSize - 8));
+
+    m_hints.extrasize -= cryptoSize;
+    memmove(m_hints.extradata, (char*)m_hints.extradata+cryptoSize, m_hints.extrasize);
+  }
 
   switch(m_hints.codec)
   {
@@ -996,21 +1007,35 @@ bool CDVDVideoCodecAndroidMediaCodec::ConfigureMediaCodec(void)
   // use a null MediaCrypto, our content is not encrypted.
   // use a null Surface, we will extract the video picture data manually.
   int flags = 0;
-  CJNIMediaCrypto crypto(jni::jhobject(NULL));
+  CJNIMediaCrypto *crypto(0);
+
+  if(!m_cryptoData.empty())
+  {
+    std::vector<char>sessionId, initData;
+    uint64_t most, least;
+
+    crypto = new CJNIMediaCrypto(CJNIUUID(most, least), initData);
+    crypto->setMediaDrmSession(sessionId);
+  }
+  else
+   crypto = new CJNIMediaCrypto(jni::jhobject(NULL));
+
   // our jni gets upset if we do this a different
   // way, do not mess with it.
   if (m_render_sw)
   {
     CJNISurface surface(jni::jhobject(NULL));
-    m_codec->configure(mediaformat, surface, crypto, flags);
+    m_codec->configure(mediaformat, surface, *crypto, flags);
   }
   else
   {
     if (m_render_surface)
-      m_codec->configure(mediaformat, m_videosurface, crypto, flags);
+      m_codec->configure(mediaformat, m_videosurface, *crypto, flags);
     else
-      m_codec->configure(mediaformat, *m_surface, crypto, flags);
+      m_codec->configure(mediaformat, *m_surface, *crypto, flags);
   }
+  delete crypto;
+
   // always, check/clear jni exceptions.
   if (xbmc_jnienv()->ExceptionCheck())
   {

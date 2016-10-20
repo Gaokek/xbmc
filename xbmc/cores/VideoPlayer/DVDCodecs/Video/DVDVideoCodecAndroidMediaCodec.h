@@ -136,6 +136,8 @@ protected:
   CJNISurface    *m_surface;
   unsigned int    m_textureId;
   CJNISurface     m_videosurface;
+
+  std::vector<uint8_t> m_cryptoData;
   // we need these as shared_ptr because CDVDVideoCodecAndroidMediaCodec
   // will get deleted before CLinuxRendererGLES is shut down and
   // CLinuxRendererGLES refs them via CDVDMediaCodecInfo.
