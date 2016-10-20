@@ -45,6 +45,7 @@
 #include "platform/android/jni/MediaFormat.h"
 #include "platform/android/jni/MediaCodecList.h"
 #include "platform/android/jni/MediaCodecInfo.h"
+#include "platform/android/jni/MediaCodecCryptoInfo.h"
 #include "platform/android/jni/Surface.h"
 #include "platform/android/jni/SurfaceTexture.h"
 #include "platform/android/jni/UUID.h"
@@ -751,6 +752,20 @@ int CDVDVideoCodecAndroidMediaCodec::Decode(uint8_t *pData, int iSize, double dt
       if (!(m_state == MEDIACODEC_STATE_FLUSHED || m_state == MEDIACODEC_STATE_RUNNING  || m_state == MEDIACODEC_STATE_BEFORE_ENDOFSTREAM))
         CLog::Log(LOGERROR, "CDVDVideoCodecAndroidMediaCodec::Decode Dequeue: Wrong state (%d)", m_state);
 
+      CJNIMediaCodecCryptoInfo *cryptoInfo(0);
+      if (!m_cryptoData.empty())
+      {
+        uint8_t *oldpData(pData);
+        unsigned int numSubsamples(*(unsigned int*)pData);pData+=sizeof(numSubsamples);
+        std::vector<int> clearBytes((uint16_t*)pData, ((uint16_t*)pData)+numSubsamples);pData+=(numSubsamples*sizeof(uint16_t));
+        std::vector<int> cipherBytes((uint32_t*)pData, ((uint32_t*)pData)+numSubsamples);pData+=(numSubsamples*sizeof(uint32_t));
+        std::vector<char> iv(pData, pData+16);pData+=16;
+        std::vector<char> kid(pData, pData+16);pData+=16;
+        iSize -= (pData - oldpData);
+        cryptoInfo = new CJNIMediaCodecCryptoInfo();
+        cryptoInfo->set(numSubsamples, clearBytes, cipherBytes, kid, iv, CJNIMediaCodec::CRYPTO_MODE_AES_CTR);
+      }
+
       // we have an input buffer, fill it.
       if (pData && m_bitstream)
       {
@@ -817,7 +832,16 @@ int CDVDVideoCodecAndroidMediaCodec::Decode(uint8_t *pData, int iSize, double dt
         m_state = MEDIACODEC_STATE_ENDOFSTREAM;
       }
       int offset = 0;
-      m_codec->queueInputBuffer(index, offset, iSize, presentationTimeUs, flags);
+      if (!cryptoInfo)
+      {
+        m_codec->queueInputBuffer(index, offset, iSize, presentationTimeUs, flags);
+      }
+      else
+      {
+        m_codec->queueSecureInputBuffer(index, offset, *cryptoInfo, presentationTimeUs, flags);
+        delete cryptoInfo;
+      }
+
       // clear any jni exceptions, jni gets upset if we do not.
       if (xbmc_jnienv()->ExceptionCheck())
       {
@@ -1013,6 +1037,12 @@ bool CDVDVideoCodecAndroidMediaCodec::ConfigureMediaCodec(void)
   {
     std::vector<char>sessionId, initData;
     uint64_t most, least;
+    const uint8_t* pData(m_cryptoData.data());
+
+    sessionId.assign(pData+1, pData+(1 + *pData));pData += (1 + *pData);
+    most = *(const uint64_t*)(pData);pData+=8;
+    least = *(const uint64_t*)(pData);pData+=8;
+    initData.assign(pData+1, pData+(1 + *pData));
 
     crypto = new CJNIMediaCrypto(CJNIUUID(most, least), initData);
     crypto->setMediaDrmSession(sessionId);
