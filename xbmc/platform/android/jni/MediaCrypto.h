@@ -26,7 +26,7 @@ class CJNIUUID;
 class CJNIMediaCrypto : public CJNIBase
 {
 public:
-  CJNIMediaCrypto(const jni::jhobject &object) : CJNIBase(object) {}
+  CJNIMediaCrypto(const jni::jhobject &object) : CJNIBase(object) {};
   CJNIMediaCrypto(const CJNIUUID& uuid, const std::vector<char>& initData);
   ~CJNIMediaCrypto() {}
 
