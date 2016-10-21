@@ -621,6 +621,11 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
     return false;
   }
 
+  if (!m_cryptoData.empty())
+  {
+    SAFE_DELETE(m_bitstream);
+  }
+
   CLog::Log(LOGINFO, "CDVDVideoCodecAndroidMediaCodec:: "
     "Open Android MediaCodec %s", m_codecname.c_str());
 
@@ -756,7 +761,7 @@ int CDVDVideoCodecAndroidMediaCodec::Decode(uint8_t *pData, int iSize, double dt
       if (!m_cryptoData.empty())
       {
         uint8_t *oldpData(pData);
-        unsigned int numSubsamples(*(unsigned int*)pData);pData+=sizeof(numSubsamples);
+        unsigned int numSubsamples(*((unsigned int*)pData));pData+=sizeof(numSubsamples);
         std::vector<int> clearBytes((uint16_t*)pData, ((uint16_t*)pData)+numSubsamples);pData+=(numSubsamples*sizeof(uint16_t));
         std::vector<int> cipherBytes((uint32_t*)pData, ((uint32_t*)pData)+numSubsamples);pData+=(numSubsamples*sizeof(uint32_t));
         std::vector<char> iv(pData, pData+16);pData+=16;
@@ -1035,17 +1040,26 @@ bool CDVDVideoCodecAndroidMediaCodec::ConfigureMediaCodec(void)
 
   if(!m_cryptoData.empty())
   {
-    std::vector<char>sessionId, initData;
-    uint64_t most, least;
+    CLog::Log(LOGDEBUG, "XXX Parsing Crypto (size: %u)", (unsigned int)m_cryptoData.size());
+
+    std::vector<char>sessionId;
+    uint64_t mostB(0), leastB(0);
     const uint8_t* pData(m_cryptoData.data());
 
     sessionId.assign(pData+1, pData+(1 + *pData));pData += (1 + *pData);
-    most = *(const uint64_t*)(pData);pData+=8;
-    least = *(const uint64_t*)(pData);pData+=8;
-    initData.assign(pData+1, pData+(1 + *pData));
+    for(unsigned int i(0);i<8;++i){mostB = (mostB << 8) | *pData++;}
+    for(unsigned int i(0);i<8;++i){leastB = (leastB << 8) | *pData++;}
 
-    crypto = new CJNIMediaCrypto(CJNIUUID(most, least), initData);
-    crypto->setMediaDrmSession(sessionId);
+    crypto = new CJNIMediaCrypto(CJNIUUID(mostB, leastB), sessionId);
+    if (xbmc_jnienv()->ExceptionCheck())
+    {
+      CLog::Log(LOGERROR, "MediaCrypto::ExceptionCheck: <init>");
+      xbmc_jnienv()->ExceptionDescribe();
+      xbmc_jnienv()->ExceptionClear();
+      return false;
+    }
+    //CLog::Log(LOGDEBUG, "XXX SetMediaDRMSession");
+    //crypto->setMediaDrmSession(sessionId);
   }
   else
    crypto = new CJNIMediaCrypto(jni::jhobject(NULL));
