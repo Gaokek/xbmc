@@ -769,6 +769,7 @@ int CDVDVideoCodecAndroidMediaCodec::Decode(uint8_t *pData, int iSize, double dt
         iSize -= (pData - oldpData);
         cryptoInfo = new CJNIMediaCodecCryptoInfo();
         cryptoInfo->set(numSubsamples, clearBytes, cipherBytes, kid, iv, CJNIMediaCodec::CRYPTO_MODE_AES_CTR);
+        CLog::Log(LOGERROR, "CDVDVideoCodecAndroidMediaCodec::Decode size: %d, NumSubsamples: %d", (unsigned int) iSize, numSubsamples);
       }
 
       // we have an input buffer, fill it.
