@@ -582,7 +582,18 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
   {
     CLog::Log(LOGERROR, "CDVDVideoCodecAndroidMediaCodec:: Failed to create Android MediaCodec");
     SAFE_DELETE(m_bitstream);
-    return false;
+    if ((m_hints.flags & CDemuxStream::FLAG_STREAMCHANGE) != 0)
+    {
+      //This is the call to prepare the decoder if VideoPlayer detects a streamchange.
+      // Let us return true - VideoPlayerVideo will call ReOpen() on time the current Decoder is freed 
+      CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec:: Postpone Open()");
+      return true;
+    }
+    else
+    {
+      CLog::Log(LOGERROR, "CDVDVideoCodecAndroidMediaCodec:: Failed to create Android MediaCodec");
+      return false;
+    }
   }
 
   // blacklist of devices that cannot surface render.
@@ -638,6 +649,15 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
   m_processInfo.SetVideoDeintMethod("hardware");
 
   return m_opened;
+}
+
+void CDVDVideoCodecAndroidMediaCodec::Reopen()
+{
+  CLog::Log(LOGDEBUG, "CDVDVideoCodecAndroidMediaCodec::Reopen() called");
+  Dispose();
+
+  CDVDCodecOptions options;
+  Open(m_hints, options);
 }
 
 void CDVDVideoCodecAndroidMediaCodec::Dispose()
@@ -758,7 +778,7 @@ int CDVDVideoCodecAndroidMediaCodec::Decode(uint8_t *pData, int iSize, double dt
         CLog::Log(LOGERROR, "CDVDVideoCodecAndroidMediaCodec::Decode Dequeue: Wrong state (%d)", m_state);
 
       CJNIMediaCodecCryptoInfo *cryptoInfo(0);
-      if (!m_cryptoData.empty())
+      if (pData && iSize && !m_cryptoData.empty())
       {
         uint8_t *oldpData(pData);
         unsigned int numSubsamples(*((unsigned int*)pData));pData+=sizeof(numSubsamples);
@@ -769,7 +789,6 @@ int CDVDVideoCodecAndroidMediaCodec::Decode(uint8_t *pData, int iSize, double dt
         iSize -= (pData - oldpData);
         cryptoInfo = new CJNIMediaCodecCryptoInfo();
         cryptoInfo->set(numSubsamples, clearBytes, cipherBytes, kid, iv, CJNIMediaCodec::CRYPTO_MODE_AES_CTR);
-        CLog::Log(LOGERROR, "CDVDVideoCodecAndroidMediaCodec::Decode size: %d, NumSubsamples: %d", (unsigned int) iSize, numSubsamples);
       }
 
       // we have an input buffer, fill it.
