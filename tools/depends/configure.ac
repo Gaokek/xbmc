@@ -62,6 +62,11 @@ AC_ARG_WITH([cpu],
   [optional. specify target cpu. guessed if not specified])],
   [use_cpu=$withval],use_cpu=auto)
 
+AC_ARG_WITH([arch],
+  [AS_HELP_STRING([--with-arch],
+  [optional. specify target arch. guessed if not specified])],
+  [use_arch=$withval],use_arch=auto)
+
 AC_ARG_WITH([ndk],
   [AS_HELP_STRING([--with-ndk],
   [specify path to ndk (required for android only)])],
@@ -112,6 +117,10 @@ if test "x$host" = "x$build"; then
   cross_compiling="no"
 fi
 
+if test "x$use_cpu" = "xauto"; then
+  use_cpu=$host_cpu
+fi
+
 deps_dir=$use_host
 tool_dir=$build_cpu-$build_os-native
 cross_compiling="yes"
@@ -139,43 +148,30 @@ esac
 
 case $host in
   arm*-*linux-android*)
-    if test "x$use_cpu" = "xauto"; then
-      use_cpu="armeabi-v7a"
-    fi
     use_sdk="${use_sdk:-android-21}"
     deps_dir="$use_host-$use_sdk"
     platform_cflags="-DANDROID -Os -fexceptions"
-    if test "x$use_cpu" = "xarmeabi-v7a"; then
-      platform_cflags+=" -march=armv7-a -mtune=cortex-a9 -mfloat-abi=softfp -mfpu=neon"
-    fi
     platform_ldflags="-L$prefix/$deps_dir/lib/$use_sdk"
     platform_cxxflags="$platform_cflags -frtti"
     platform_includes="-I$prefix/$deps_dir/include/$use_sdk"
     platform_os="android"
+    platform_arch="arm"
     #android builds are always cross
     cross_compiling="yes"
   ;;
   aarch64*-*linux-android*)
-    if test "x$use_cpu" = "xauto"; then
-      use_cpu="arm64-v8a"
-    fi
     use_sdk="${use_sdk:-android-21}"
     deps_dir="$use_host-$use_sdk"
     platform_cflags="-DANDROID -Os -fexceptions"
-    if test "x$use_cpu" = "xarm64-v8a"; then
-      platform_cflags+=" -march=armv8-a -mtune=cortex-a53"
-    fi
     platform_ldflags="-L$prefix/$deps_dir/lib/$use_sdk"
     platform_cxxflags="$platform_cflags -frtti"
     platform_includes="-I$prefix/$deps_dir/include/$use_sdk"
     platform_os="android"
+    platform_arch="aarch64"
     #android builds are always cross
     cross_compiling="yes"
   ;;
   i*86*-linux-android*)
-    if test "x$use_cpu" = "xauto"; then
-      use_cpu=$host_cpu
-    fi
     use_sdk="${use_sdk:-android-21}"
     deps_dir="$use_host-$use_sdk"
     platform_cflags="-DANDROID -Os -fexceptions"
@@ -183,44 +179,33 @@ case $host in
     platform_cxxflags="$platform_cflags -frtti"
     platform_includes="-I$prefix/$deps_dir/include/$use_sdk"
     platform_os="android"
+    platform_arch="x86_32"
     #android builds are always cross
     cross_compiling="yes"
   ;;
   arm*-*-linux-gnu*|arm*-*-linux-uclibc*)
-    if test "$use_platform" = "auto"; then
-      if test "x$use_cpu" = "xauto"; then
-        use_cpu=$host_cpu
-      fi
-      use_toolchain="${use_toolchain:-/usr}"
-      platform_cflags="-Os -fPIC -DPIC"
-      platform_ldflags="-Wl,-rpath-link=$prefix/$deps_dir/lib"
-      platform_cxxflags="$platform_cflags"
-      platform_os="linux"
-    fi
+    platform_cflags="-Os -fPIC -DPIC"
+    platform_cxxflags="$platform_cflags"
+    platform_os="linux"
+    platform_arch=arm
   ;;
   aarch64*-*-linux-gnu*|aarch*-*-linux-be*)
-    if test "$use_platform" = "auto"; then
-      if test "x$use_cpu" = "xauto"; then
-        use_cpu=$host_cpu
-      fi
-      use_toolchain="${use_toolchain:-/usr}"
-      platform_cflags="-Os -fPIC -DPIC"
-      platform_ldflags="-Wl,-rpath-link=$prefix/$deps_dir/lib"
-      platform_cxxflags="$platform_cflags"
-      platform_os="linux"
-    fi
+    platform_cflags="-Os -fPIC -DPIC"
+    platform_cxxflags="$platform_cflags"
+    platform_os="linux"
+    platform_arch="aarch64"
   ;;
   *i686*-linux-gnu*|i*86*-*-linux-uclibc*)
-    use_cpu=$host_cpu
     use_toolchain="${use_toolchain:-/usr}"
     platform_os="linux"
+    platform_arch="x86_32"
   ;;
   x86_64*-linux-gnu*|x86_64-*-linux-uclibc*)
-    use_cpu=$host_cpu
     use_toolchain="${use_toolchain:-/usr}"
     platform_cflags="-fPIC -DPIC"
     platform_cxxflags="$platform_cflags"
     platform_os="linux"
+    platform_arch="x86_64"
   ;;
   *darwin*)
     if test "x$prefix" = "xNONE"; then
@@ -259,23 +244,25 @@ case $host in
     esac
     case $host in
       *86*-apple-darwin)
-        MC_CHECK_NOT_CPU([$use_cpu], "arm")
+        MC_CHECK_NOT_CPU([$use_arch], "arm")
 
         # setup which cpu to use
         case $host in
           x86_64-apple-darwin*)
-            if test "x$use_cpu" = "xauto"; then
-              use_cpu=x86_64
+            platform_arch=x86_64
+            if test "x$use_arch" = "xauto"; then
+              use_arch=x86_64
             fi
           ;;
           i*86-apple-darwin*)
-            if test "x$use_cpu" = "xauto"; then
-              use_cpu=i386
+            platform_arch=x86_32
+            if test "x$use_arch" = "xauto"; then
+              use_arch=i386
             fi
             platform_ldflags+=" -read_only_relocs suppress"
          ;;
           *)
-            AC_MSG_ERROR(error in configure of --with-arch=$use_cpu)
+            AC_MSG_ERROR(error in configure of --with-arch=$use_arch)
         esac
 
         # setup which sdk to use
@@ -317,11 +304,6 @@ case $host in
 
         # setup which sdk to use
         if test "$use_platform" = "tvos"; then
-          # setup which cpu to use
-          if test "x$use_cpu" = "xauto"; then
-            use_cpu=arm64
-          fi
-
           target_platform=appletvos
 
           found_sdk_version=[`$use_xcodebuild -showsdks | grep $target_platform | sort | tail -n 1 | awk '{ print $2}'`]
@@ -330,18 +312,16 @@ case $host in
 	  platform_cxxflags+=" -fembed-bitcode"
           sdk_name=$target_platform$use_sdk
           platform_min_version="$target_platform-version-min=9.0"
+          platform_arch=aarch64
         else
-          # setup which cpu to use
-          if test "x$use_cpu" = "xauto"; then
-            use_cpu=armv7
-          fi
-
           target_platform=iphoneos
 
           found_sdk_version=[`$use_xcodebuild -showsdks | grep $target_platform | sort | tail -n 1 | awk '{ print $2}'`]
           use_sdk="${use_sdk:-$found_sdk_version}"
           sdk_name=$target_platform$use_sdk
           platform_min_version="$target_platform-version-min=5.1"
+          platform_ldflags+=" -Wl,-segalign,4000"
+          platform_arch=arm
         fi
 	case $use_sdk in
           4.*);;
@@ -379,15 +359,33 @@ case $host in
         use_sdk_path=[`$use_xcodebuild -version -sdk $sdk_name | grep ^Path | awk '{ print $2}'`]
       ;;
     esac
-    platform_cflags+=" -arch $use_cpu -m$platform_min_version"
-    platform_ldflags+=" -arch $use_cpu -m$platform_min_version -isysroot $use_sdk_path -stdlib=libc++"
-    platform_cxxflags+=" -arch $use_cpu -m$platform_min_version -std=c++11 -stdlib=libc++"
+    platform_cflags+=" -arch $platform_arch -m$platform_min_version"
+    platform_ldflags+=" -arch $platform_arch -m$platform_min_version -isysroot $use_sdk_path -stdlib=libc++"
+    platform_cxxflags+=" -arch $platform_arch -m$platform_min_version -std=c++11 -stdlib=libc++"
     platform_includes="-isysroot $use_sdk_path"
-    deps_dir=$sdk_name"_"$use_cpu-target
+    deps_dir=$sdk_name"_"$platform_arch-target
     tool_dir=buildtools-native;
   ;;
   *)
     AC_MSG_ERROR(unsupported host ($use_host))
+esac
+
+#tuning options for arm
+case $platform_arch in
+  arm | aarch64)
+    if test "x$use_arch" != "xauto"; then
+      platform_cflags+=" -march=$use_arch"
+      platform_cxxflags+=" -march=$use_arch"
+    fi
+    if echo $use_arch | grep -qE "^armv7"; then
+      platform_cflags+=" -mfpu=neon"
+      platform_cxxflags+=" -mfpu=neon"
+    fi
+    if test "x$use_cpu" != "xauto"; then
+      platform_cflags+=" -mtune=$use_cpu"
+      platform_cxxflags+=" -mtune=$use_cpu"
+    fi
+    ;;
 esac
 
 case $use_platform in
@@ -612,6 +610,7 @@ AC_SUBST(platform_cxxflags)
 AC_SUBST(platform_ldflags)
 AC_SUBST(platform_includes)
 AC_SUBST(platform_os)
+AC_SUBST(platform_arch)
 AC_SUBST(build_os)
 AC_SUBST(has_zlib)
 AC_SUBST(link_iconv)
@@ -624,6 +623,7 @@ AC_OUTPUT
 echo -e "toolchain:\t $use_toolchain"
 echo -e "cpu:\t\t $use_cpu"
 echo -e "host:\t\t $use_host"
+echo -e "arch:\t\t $use_arch"
 if test "$platform_os" == "android"; then
   echo -e "sdk-platform:\t $use_sdk"
   echo -e "build-tools:\t $build_tools_path"
