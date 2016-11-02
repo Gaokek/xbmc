@@ -19,6 +19,30 @@
  */
 
 #include "DVDDemux.h"
+#include "libavformat/avformat.h"
+
+unsigned int CDemuxStream::AvDispositionToDemuxFlags(unsigned int disposition)
+{
+  static unsigned int translate[][2]={
+    {AV_DISPOSITION_DEFAULT, FLAG_DEFAULT},
+    {AV_DISPOSITION_DUB, FLAG_DUB},
+    {AV_DISPOSITION_ORIGINAL, FLAG_ORIGINAL},
+    {AV_DISPOSITION_COMMENT, FLAG_COMMENT},
+    {AV_DISPOSITION_LYRICS, FLAG_LYRICS},
+    {AV_DISPOSITION_KARAOKE, FLAG_KARAOKE},
+    {AV_DISPOSITION_FORCED, FLAG_FORCED},
+    {AV_DISPOSITION_HEARING_IMPAIRED, FLAG_HEARING_IMPAIRED},
+    {AV_DISPOSITION_VISUAL_IMPAIRED, FLAG_VISUAL_IMPAIRED},
+    {AV_DISPOSITION_ATTACHED_PIC, FLAG_DISP_ATTACHED_PIC}
+  };
+
+  unsigned int ret(0);
+  for (auto avt : translate)
+    if (disposition & avt[0])
+      ret |= avt[1];
+
+  return ret;
+}
 
 std::string CDemuxStreamAudio::GetStreamType()
 {
