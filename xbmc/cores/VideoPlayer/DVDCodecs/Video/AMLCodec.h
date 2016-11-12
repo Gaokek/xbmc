@@ -51,8 +51,11 @@ public:
   int           GetDataSize();
   double        GetTimeSize();
   void          SetVideoRect(const CRect &SrcRect, const CRect &DestRect);
+  void          SetVideoRate(int videoRate);
   int64_t       GetCurPts() const { return m_cur_pts; }
   int       	GetOMXPts() const { return static_cast<int>(m_cur_pts - m_start_pts); }
+  static float  OMXPtsToSeconds(int omxpts);
+  int           GetAmlDuration() const;
 
 protected:
   virtual void  Process();
@@ -73,10 +76,10 @@ private:
 
   DllLibAmCodec   *m_dll;
   bool             m_opened;
+  bool             m_bDeque;
   am_private_t    *am_private;
   CDVDStreamInfo   m_hints;
   volatile int     m_speed;
-  volatile int64_t m_1st_pts;
   volatile int64_t m_cur_pts;
   volatile double  m_timesize;
   volatile int64_t m_vbufsize;

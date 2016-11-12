@@ -315,7 +315,7 @@ bool CDVDVideoCodecAmlogic::GetPicture(DVDVideoPicture* pDvdVideoPicture)
     m_Codec->GetPicture(&m_videobuffer);
   *pDvdVideoPicture = m_videobuffer;
 
-  CDVDAmlogicInfo* info = new CDVDAmlogicInfo(this, m_Codec, m_Codec->GetOMXPts());
+  CDVDAmlogicInfo* info = new CDVDAmlogicInfo(this, m_Codec, m_Codec->GetOMXPts(), m_Codec->GetAmlDuration());
 
   {
     CSingleLock lock(m_secure);
@@ -592,6 +592,10 @@ void CDVDVideoCodecAmlogic::FrameRateTracking(uint8_t *pData, int iSize, double 
       {
         m_framerate = framerate;
         m_video_rate = (int)(0.5 + (96000.0 / framerate));
+
+        if (m_Codec)
+          m_Codec->SetVideoRate(m_video_rate);
+
         CLog::Log(LOGDEBUG, "%s: detected new framerate(%f), video_rate(%d)",
           __MODULE_NAME__, m_framerate, m_video_rate);
       }
@@ -607,11 +611,12 @@ void CDVDVideoCodecAmlogic::RemoveInfo(CDVDAmlogicInfo *info)
   m_inflight.erase(m_inflight.find(info));
 }
 
-CDVDAmlogicInfo::CDVDAmlogicInfo(CDVDVideoCodecAmlogic *codec, CAMLCodec *amlcodec, int omxPts)
+CDVDAmlogicInfo::CDVDAmlogicInfo(CDVDVideoCodecAmlogic *codec, CAMLCodec *amlcodec, int omxPts, int amlDuration)
   : m_refs(0)
   , m_codec(codec)
   , m_amlCodec(amlcodec)
   , m_omxPts(omxPts)
+  , m_amlDuration(amlDuration)
 {
 }
 
